@@ -1,9 +1,3 @@
-# 🛒 Project Ecommerce KahtaCards
-
-Project ini adalah aplikasi web e-commerce berbasis **Django** yang menyediakan fitur seperti autentikasi user (login & register) serta katalog produk.
-
----
-
 ## Cara Menjalankan Project (First Setup)
 
 ### 1. Clone Repository
@@ -43,11 +37,20 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+---
 
+### 4. Setup Environment
+
+Buat file `.env` di root project:
+
+```env
+SECRET_KEY=django-insecure-your-secret-key
+DEBUG=True
+```
 
 ---
 
-### 4. Migrasi Database
+### 5. Migrasi Database
 
 ```bash
 python manage.py migrate
@@ -55,7 +58,7 @@ python manage.py migrate
 
 ---
 
-### 5. Buat Superuser (Opsional)
+### 6. Buat Superuser (Opsional)
 
 ```bash
 python manage.py createsuperuser
@@ -63,7 +66,7 @@ python manage.py createsuperuser
 
 ---
 
-### 6. Jalankan Server
+### 7. Jalankan Server
 
 ```bash
 python manage.py runserver
