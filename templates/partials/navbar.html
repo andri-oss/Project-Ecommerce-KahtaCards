@@ -1,0 +1,55 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+<nav class="site-nav" id="site-nav">
+    <div class="container">
+        <div class="nav-inner">
+
+            <!-- Logo -->
+            <a href="/" class="nav-logo">Kahta Grafika</a>
+
+            <!-- Desktop Center Links -->
+            <div class="nav-links">
+                <a href="/" class="{% if request.path == '/' %}active{% endif %}">Beranda</a>
+                <a href="{% url 'catalog:product_list' %}" class="{% if 'catalog' in request.path %}active{% endif %}">Katalog</a>
+                <a href="/cara-pesan/" class="{% if 'cara-pesan' in request.path %}active{% endif %}">Cara Pesan</a>
+            </div>
+
+            <!-- Desktop Right Actions -->
+            <div class="nav-actions">
+                {% if user.is_authenticated %}
+                    <span class="nav-login">Halo, {{ user.username }}</span>
+                    <a href="/auth/logout/" class="nav-register">Keluar</a>
+                {% else %}
+                    <a href="/auth/login/" class="nav-login">Login</a>
+                    <a href="/auth/register/" class="nav-register">Daftar</a>
+                {% endif %}
+            </div>
+
+            <!-- Hamburger -->
+            <button class="nav-hamburger" aria-label="Buka menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Drawer -->
+<div class="nav-drawer" id="nav-drawer" aria-hidden="true">
+    <a href="/" data-nav>Beranda</a>
+    <a href="{% url 'catalog:product_list' %}" data-nav>Katalog</a>
+    <a href="/cara-pesan/" data-nav>Cara Pesan</a>
+    <div class="nav-drawer-actions">
+        {% if user.is_authenticated %}
+            <a href="/auth/logout/" class="nav-register">Keluar</a>
+        {% else %}
+            <a href="/auth/register/" class="nav-register">Daftar</a>
+            <a href="/auth/login/" class="nav-login">Login</a>
+        {% endif %}
+    </div>
+</div>
+
+<script src="{% static 'js/navbar.js' %}"></script>

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ product.name }}</h1>
+
+<img src="{{ product.image.url }}" width="300">
+<p><strong>Price:</strong> {{ product.price }}</p>
+<p><strong>Material:</strong> {{ product.material_spec }}</p>
+<p>{{ product.description }}</p>
+
+<a href="{% url 'catalog:product_list' %}">Back to catalog</a>
+{% endblock %}

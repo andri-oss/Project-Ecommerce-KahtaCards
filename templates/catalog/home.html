@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kahta Grafika — Kemasan Custom untuk Bisnis Anda{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════════════ -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-inner">
+
+            <!-- Left: Text -->
+            <div class="hero-content">
+                <span class="hero-label">Premium Packaging</span>
+                <h1 class="hero-title">
+                    Kemasan Custom<br>untuk Bisnis Anda
+                </h1>
+                <p class="hero-desc">
+                    Kami hadir untuk membantu menciptakan kemasan eksklusif dan
+                    berkualitas tinggi yang memperkuat identitas brand Anda.
+                </p>
+                <div class="hero-actions">
+                    <a href="{% url 'catalog:product_list' %}" class="btn btn-primary">
+                        Lihat Katalog
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                    <a href="/cara-pesan/" class="btn btn-outline">Cara Pesan</a>
+                </div>
+            </div>
+
+            <!-- Right: Visual -->
+            <div class="hero-visual">
+                <div class="hero-image-wrap">
+                    <span class="hero-badge">Premium Packaging</span>
+                    <div class="hero-box-placeholder">
+                        <div class="hero-box-shape"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURES
+══════════════════════════════════════════════════════════ -->
+<section class="features">
+    <div class="container">
+        <div class="features-grid">
+
+            <div class="feature-card reveal">
+                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <h3 class="feature-title">Produk Terjamin</h3>
+                <p class="feature-desc">
+                    Setiap produk kami melalui proses kontrol kualitas
+                    yang ketat sebelum sampai ke tangan Anda.
+                </p>
+            </div>
+
+            <div class="feature-card reveal reveal-delay-1">
+                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <h3 class="feature-title">Waktu Tepat Sasaran</h3>
+                <p class="feature-desc">
+                    Kami memastikan produksi dan pengiriman selesai
+                    tepat waktu sesuai deadline Anda.
+                </p>
+            </div>
+
+            <div class="feature-card reveal reveal-delay-2">
+                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <h3 class="feature-title">Pilihan Terbaik</h3>
+                <p class="feature-desc">
+                    Ribuan varian desain dan material untuk kemasan
+                    yang sempurna mewakili brand Anda.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     KATEGORI PRODUK
+══════════════════════════════════════════════════════════ -->
+<section class="categories">
+    <div class="container">
+
+        <div class="categories-header reveal">
+            <span class="section-label">Koleksi Kami</span>
+            <h2 class="section-heading">Kategori Produk</h2>
+        </div>
+
+        <div class="categories-grid">
+
+            <!-- Kotak -->
+            <div class="category-card reveal">
+                <div class="category-image category-image--kotak"></div>
+                <div class="category-body">
+                    <h3 class="category-name">Kotak</h3>
+                    <p class="category-desc">
+                        Solusi kotak kemasan premium untuk berbagai kebutuhan bisnis Anda.
+                    </p>
+                    <a href="{% url 'catalog:product_list' %}?category=kotak" class="category-link">
+                        Lihat Produk
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Amplop -->
+            <div class="category-card reveal reveal-delay-1">
+                <div class="category-image category-image--amplop"></div>
+                <div class="category-body">
+                    <h3 class="category-name">Amplop</h3>
+                    <p class="category-desc">
+                        Desain amplop eksklusif yang meninggalkan kesan pertama yang luar biasa.
+                    </p>
+                    <a href="{% url 'catalog:product_list' %}?category=amplop" class="category-link">
+                        Lihat Produk
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hangtag -->
+            <div class="category-card reveal reveal-delay-2">
+                <div class="category-image category-image--hangtag"></div>
+                <div class="category-body">
+                    <h3 class="category-name">Hangtag</h3>
+                    <p class="category-desc">
+                        Hangtag premium yang memberikan sentuhan profesional pada produk Anda.
+                    </p>
+                    <a href="{% url 'catalog:product_list' %}?category=hangtag" class="category-link">
+                        Lihat Produk
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     CARA PESAN
+══════════════════════════════════════════════════════════ -->
+<section class="how-to-order" id="cara-pesan">
+    <div class="container">
+
+        <div class="how-header reveal">
+            <span class="section-label">Panduan</span>
+            <h2 class="section-heading">Cara Pesan</h2>
+        </div>
+
+        <div class="steps-track">
+
+            <div class="step reveal">
+                <div class="step-number">1</div>
+                <div>
+                    <div class="step-title">Pilih Produk</div>
+                    <p class="step-desc">Temukan produk kemasan yang sesuai kebutuhan dari katalog kami.</p>
+                </div>
+            </div>
+
+            <div class="step reveal reveal-delay-1">
+                <div class="step-number">2</div>
+                <div>
+                    <div class="step-title">Upload Desain</div>
+                    <p class="step-desc">Unggah file desain Anda atau gunakan layanan desain grafis kami.</p>
+                </div>
+            </div>
+
+            <div class="step reveal reveal-delay-2">
+                <div class="step-number">3</div>
+                <div>
+                    <div class="step-title">Konfirmasi Pesanan</div>
+                    <p class="step-desc">Kami akan memverifikasi file dan memberikan estimasi waktu produksi.</p>
+                </div>
+            </div>
+
+            <div class="step reveal reveal-delay-3">
+                <div class="step-number">4</div>
+                <div>
+                    <div class="step-title">Terima Produk</div>
+                    <p class="step-desc">Produk dikemas dengan aman dan dikirim langsung ke lokasi Anda.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     TESTIMONIALS
+══════════════════════════════════════════════════════════ -->
+<section class="testimonials">
+    <div class="container">
+
+        <div class="testimonials-header reveal">
+            <span class="section-label">Ulasan</span>
+            <h2 class="section-heading">Apa Kata Mereka</h2>
+        </div>
+
+        <div class="testimonials-grid">
+
+            <div class="testimonial-card reveal">
+                <div class="testimonial-stars">
+                    <span class="star">★</span><span class="star">★</span>
+                    <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                </div>
+                <p class="testimonial-text">
+                    "Kemasan dari Kahta Grafika benar-benar meningkatkan persepsi nilai produk saya.
+                    Pelanggan selalu kagum saat menerima paket."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar author-avatar--s">S</div>
+                    <div>
+                        <div class="author-name">Sari Dewi</div>
+                        <div class="author-role">Owner, Boutique SARDI</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card reveal reveal-delay-1">
+                <div class="testimonial-stars">
+                    <span class="star">★</span><span class="star">★</span>
+                    <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                </div>
+                <p class="testimonial-text">
+                    "Kualitas cetaknya sangat presisi, warnanya akurat dengan desain yang saya buat.
+                    Pengiriman juga tepat waktu!"
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar author-avatar--r">R</div>
+                    <div>
+                        <div class="author-name">Rafi Putra</div>
+                        <div class="author-role">Brand Manager, NutriFoods</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card reveal reveal-delay-2">
+                <div class="testimonial-stars">
+                    <span class="star">★</span><span class="star">★</span>
+                    <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                </div>
+                <p class="testimonial-text">
+                    "Layanan customer service-nya sangat responsif. Membantu saya memilih material
+                    yang tepat sesuai budget yang ada."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar author-avatar--n">N</div>
+                    <div>
+                        <div class="author-name">Nadia Putri</div>
+                        <div class="author-role">Founder, Artisan Jewelry Co.</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     CTA
+══════════════════════════════════════════════════════════ -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-inner reveal">
+            <h2 class="cta-title">Siap Membuat Brand Anda Lebih Berkelas?</h2>
+            <p class="cta-desc">
+                Kami siap membantu Anda menciptakan kemasan yang tak terlupakan
+            </p>
+            <a href="/cara-pesan/" class="btn btn-white">Mulai Pesan</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{% static 'js/home.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="{% static 'css/product_list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="catalog-wrapper">
+
+  {# ─── Sidebar Filter ───────────────────────────────────────────────── #}
+  <aside class="catalog-sidebar">
+    <form id="filter-form" class="filter-card" method="get" action="">
+
+      {# Category #}
+      <div class="filter-section">
+        <span class="filter-label">Category</span>
+
+        <label class="filter-option">
+          <input type="radio" name="category" value=""
+            {% if not request.GET.category %}checked{% endif %}>
+          All Categories
+        </label>
+
+        {% for category in categories %}
+        <label class="filter-option">
+          <input type="radio" name="category" value="{{ category.slug }}"
+            {% if request.GET.category == category.slug %}checked{% endif %}>
+          {{ category.name }}
+        </label>
+        {% endfor %}
+      </div>
+
+      {# Material — only shown if materials context is provided #}
+      {% if materials %}
+      <div class="filter-section">
+        <span class="filter-label">Material</span>
+        {% for material in materials %}
+        <label class="filter-option">
+          <input type="checkbox" name="material" value="{{ material.slug }}"
+            {% if material.slug in request.GET.getlist.material %}checked{% endif %}>
+          {{ material.name }}
+        </label>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {# Price Range #}
+      <div class="filter-section">
+        <span class="filter-label">Price Range</span>
+        <div class="price-range-wrap">
+          <div class="price-range-labels">
+            <span>Rp 0</span>
+            <span id="price-slider-val">Rp 10.000+</span>
+          </div>
+          <input
+            id="price-slider"
+            class="price-slider"
+            type="range"
+            name="max_price"
+            min="0"
+            max="10000"
+            step="500"
+            value="{{ request.GET.max_price|default:'10000' }}">
+        </div>
+      </div>
+
+      {# Min Qty #}
+      <div class="filter-section">
+        <span class="filter-label">Min. Qty</span>
+        <input
+          class="min-qty-input"
+          type="number"
+          name="min_qty"
+          min="1"
+          placeholder="Contoh: 100"
+          value="{{ request.GET.min_qty|default:'' }}">
+      </div>
+
+      <button type="submit" class="btn-filter">Terapkan Filter</button>
+
+    </form>{# /filter-form #}
+  </aside>
+
+  {# ─── Main Content ────────────────────────────────────────────────── #}
+  <main class="catalog-main">
+
+    {# Topbar #}
+    <div class="catalog-topbar">
+      <p class="catalog-count">
+        Menampilkan <strong>{{ page_obj.paginator.count }} produk</strong>
+      </p>
+
+      <div class="sort-wrap">
+        <span>Urutkan:</span>
+        <select id="sort-select" class="sort-select" name="sort">
+          <option value="newest"  {% if request.GET.sort == 'newest'  or not request.GET.sort %}selected{% endif %}>Terbaru</option>
+          <option value="oldest"  {% if request.GET.sort == 'oldest'  %}selected{% endif %}>Terlama</option>
+          <option value="price_asc"  {% if request.GET.sort == 'price_asc'  %}selected{% endif %}>Harga: Rendah</option>
+          <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Harga: Tinggi</option>
+          <option value="name_asc"   {% if request.GET.sort == 'name_asc'   %}selected{% endif %}>Nama A–Z</option>
+        </select>
+      </div>
+    </div>
+
+    {# Product Grid #}
+    <div class="product-grid">
+
+      {% for product in page_obj %}
+      <article class="product-card">
+
+        {# Image #}
+        <div class="card-image-wrap">
+          {% if product.min_order %}
+          <span class="badge-min">MIN. {{ product.min_order }} PCS</span>
+          {% endif %}
+
+          {% if product.image %}
+            <a href="{% url 'catalog:product_detail' product.slug %}">
+              <img
+                src="{{ product.image.url }}"
+                alt="{{ product.name }}"
+                loading="lazy">
+            </a>
+          {% else %}
+            <div class="card-no-image">Tidak ada gambar</div>
+          {% endif %}
+        </div>
+
+        {# Body #}
+        <div class="card-body">
+          <a
+            class="card-name"
+            href="{% url 'catalog:product_detail' product.slug %}">
+            {{ product.name }}
+          </a>
+
+          <p class="card-price">
+            Rp {{ product.price|floatformat:"0" }} <span>/pcs</span>
+          </p>
+
+          <button
+            class="btn-cart"
+            data-product-id="{{ product.pk }}"
+            data-product-name="{{ product.name }}"
+            type="button"
+            aria-label="Tambah {{ product.name }} ke keranjang">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            Tambah ke Keranjang
+          </button>
+        </div>
+
+      </article>
+      {% empty %}
+      <div class="catalog-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+             stroke="#c8a98a" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <p>Tidak ada produk yang ditemukan.</p>
+      </div>
+      {% endfor %}
+
+    </div>{# /product-grid #}
+
+    {# ─── Pagination ─────────────────────────────────────────────────── #}
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination-wrap" aria-label="Navigasi halaman">
+
+      {# Prev #}
+      {% if page_obj.has_previous %}
+        <a class="page-btn"
+           href="?{% with request.GET.urlencode as qs %}{{ qs }}&page={{ page_obj.previous_page_number }}{% endwith %}"
+           aria-label="Halaman sebelumnya">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </a>
+      {% else %}
+        <span class="page-btn disabled" aria-disabled="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </span>
+      {% endif %}
+
+      {# Page numbers #}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+          <span class="page-btn active" aria-current="page">{{ num }}</span>
+        {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+          <a class="page-btn"
+             href="?{% with request.GET.urlencode as qs %}{{ qs }}&page={{ num }}{% endwith %}">
+            {{ num }}
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      {# Next #}
+      {% if page_obj.has_next %}
+        <a class="page-btn"
+           href="?{% with request.GET.urlencode as qs %}{{ qs }}&page={{ page_obj.next_page_number }}{% endwith %}"
+           aria-label="Halaman berikutnya">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </a>
+      {% else %}
+        <span class="page-btn disabled" aria-disabled="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </span>
+      {% endif %}
+
+    </nav>
+    {% endif %}
+
+  </main>
+
+</div>{# /catalog-wrapper #}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/product_list.js' %}"></script>
+{% endblock %}
