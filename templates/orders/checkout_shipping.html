@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout — Pengiriman — Kahta Grafika{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="checkout-main">
+  <div class="container">
+
+    <!-- ── Stepper ─────────────────────────────────────── -->
+    <div class="stepper reveal">
+      <div class="stepper-step active">
+        <div class="stepper-circle active">1</div>
+        <span class="stepper-label">Pengiriman</span>
+      </div>
+      <div class="stepper-line"></div>
+      <div class="stepper-step">
+        <div class="stepper-circle">2</div>
+        <span class="stepper-label">Pembayaran</span>
+      </div>
+      <div class="stepper-line"></div>
+      <div class="stepper-step">
+        <div class="stepper-circle">3</div>
+        <span class="stepper-label">Konfirmasi</span>
+      </div>
+    </div>
+
+    <div class="checkout-header reveal">
+      <h1 class="checkout-title">Checkout - Pengiriman</h1>
+      <p class="checkout-subtitle">Lengkapi rincian pengiriman untuk pesanan eksklusif Anda.</p>
+    </div>
+
+    <form method="post" class="checkout-layout">
+      {% csrf_token %}
+
+      <div class="checkout-form reveal">
+        <!-- ── Shipping Method ────────────────────────────── -->
+        <div class="shipping-methods">
+          <label class="shipping-option selected" id="opt-delivery">
+            <input type="radio" name="shipping_method" value="delivery" checked>
+            <div class="shipping-option-inner">
+              <div class="shipping-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+              </div>
+              <div>
+                <div class="shipping-option-title">Kirim ke Alamat</div>
+                <div class="shipping-option-desc">Layanan kurir reguler & ekspres ke pintu Anda.</div>
+              </div>
+              <div class="shipping-radio"></div>
+            </div>
+          </label>
+
+          <label class="shipping-option" id="opt-pickup">
+            <input type="radio" name="shipping_method" value="pickup">
+            <div class="shipping-option-inner">
+              <div class="shipping-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </div>
+              <div>
+                <div class="shipping-option-title">Ambil di Toko</div>
+                <div class="shipping-option-desc">Gratis pengambilan di workshop utama kami.</div>
+              </div>
+              <div class="shipping-radio"></div>
+            </div>
+          </label>
+        </div>
+
+        <!-- ── Address Form ───────────────────────────────── -->
+        <div class="form-section" id="address-form">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">NAMA PENERIMA</label>
+              <input type="text" name="recipient_name" class="form-input" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">NO. TELEPON</label>
+              <input type="tel" name="phone" class="form-input" placeholder="+62 812 3456 789" required>
+            </div>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">PROVINSI</label>
+              <select name="province" class="form-select" required>
+                <option value="">Pilih Provinsi</option>
+                <option value="DKI Jakarta">DKI Jakarta</option>
+                <option value="Jawa Barat">Jawa Barat</option>
+                <option value="Jawa Tengah">Jawa Tengah</option>
+                <option value="Jawa Timur">Jawa Timur</option>
+                <option value="Banten">Banten</option>
+                <option value="DI Yogyakarta">DI Yogyakarta</option>
+                <option value="Bali">Bali</option>
+                <option value="Sumatera Utara">Sumatera Utara</option>
+                <option value="Sumatera Barat">Sumatera Barat</option>
+                <option value="Sulawesi Selatan">Sulawesi Selatan</option>
+                <option value="Kalimantan Timur">Kalimantan Timur</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">KOTA</label>
+              <select name="city" class="form-select" required>
+                <option value="">Pilih Kota</option>
+                <option value="Jakarta Selatan">Jakarta Selatan</option>
+                <option value="Jakarta Pusat">Jakarta Pusat</option>
+                <option value="Jakarta Barat">Jakarta Barat</option>
+                <option value="Jakarta Timur">Jakarta Timur</option>
+                <option value="Jakarta Utara">Jakarta Utara</option>
+                <option value="Bandung">Bandung</option>
+                <option value="Surabaya">Surabaya</option>
+                <option value="Semarang">Semarang</option>
+                <option value="Yogyakarta">Yogyakarta</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">KODE POS</label>
+              <input type="text" name="postal_code" class="form-input" placeholder="12345" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ALAMAT LENGKAP</label>
+            <textarea name="address" class="form-textarea" rows="3" placeholder="Jl. Kemang Raya No. 123, Blok A..." required></textarea>
+          </div>
+
+          <label class="form-checkbox">
+            <input type="checkbox" name="save_address">
+            <span class="checkmark"></span>
+            Simpan alamat ini untuk pesanan berikutnya
+          </label>
+        </div>
+      </div>
+
+      <!-- ── Order Summary Sidebar ────────────────────────── -->
+      <aside class="checkout-summary reveal reveal-delay-1">
+        <h2 class="summary-title">Ringkasan Pesanan</h2>
+
+        <div class="summary-items">
+          {% for item in items %}
+          <div class="summary-item">
+            <div class="summary-item-img">
+              {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+              {% else %}
+                <div class="summary-item-placeholder"></div>
+              {% endif %}
+            </div>
+            <div class="summary-item-info">
+              <div class="summary-item-name">{{ item.product.name }}</div>
+              <div class="summary-item-meta">Qty: {{ item.quantity }}</div>
+              <div class="summary-item-price">Rp {{ item.subtotal|floatformat:"0" }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>Rp {{ cart.total|floatformat:"0" }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Pengiriman</span>
+          <span class="text-accent">Pilih di langkah ini</span>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <span>Rp {{ cart.total|floatformat:"0" }}</span>
+        </div>
+
+        <button type="submit" class="btn-checkout">Lanjut ke Pembayaran →</button>
+
+        <div class="summary-secure">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          TRANSAKSI TERENKRIPSI & AMAN
+        </div>
+      </aside>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/checkout.js' %}"></script>
+{% endblock %}

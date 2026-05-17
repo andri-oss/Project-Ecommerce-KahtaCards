@@ -1,12 +1,291 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} — Kahta Grafika{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product_detail.css' %}?v=2">
+{% endblock %}
 
 {% block content %}
-<h1>{{ product.name }}</h1>
 
-<img src="{{ product.image.url }}" width="300">
-<p><strong>Price:</strong> {{ product.price }}</p>
-<p><strong>Material:</strong> {{ product.material_spec }}</p>
-<p>{{ product.description }}</p>
+{# ── Top: Gallery + Info ─────────────────────────────────────── #}
+<section class="pd-top">
 
-<a href="{% url 'catalog:product_list' %}">Back to catalog</a>
+  {# ── Gallery ─────────────────────────────────────────────── #}
+  <div class="pd-gallery">
+    <div class="pd-main-image" id="mainImage">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImg">
+      {% else %}
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);">
+          Tidak ada gambar
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="pd-thumbnails">
+      {% if product.image %}
+        <div class="pd-thumb active" data-src="{{ product.image.url }}">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        </div>
+        {# Show same image as additional thumbnails for visual consistency #}
+        <div class="pd-thumb" data-src="{{ product.image.url }}">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        </div>
+        <div class="pd-thumb" data-src="{{ product.image.url }}">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        </div>
+        <div class="pd-thumb" data-src="{{ product.image.url }}">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Info Panel ──────────────────────────────────────────── #}
+  <div class="pd-info">
+    <p class="pd-category-label">{{ product.category.name|upper }}</p>
+    <h1 class="pd-name">{{ product.name }}</h1>
+    <p class="pd-price">Rp {{ product.price|floatformat:"0" }}<span>/pcs</span></p>
+
+    {# Size Selector #}
+    <span class="pd-field-label">Pilih Ukuran</span>
+    <div class="pd-sizes">
+      <button type="button" class="pd-size-btn" data-size="S">S</button>
+      <button type="button" class="pd-size-btn active" data-size="M">M</button>
+      <button type="button" class="pd-size-btn" data-size="L">L</button>
+    </div>
+
+    {# Quantity #}
+    <span class="pd-field-label">Jumlah Pesanan</span>
+    <div class="pd-qty-row">
+      <div class="pd-qty-control">
+        <button type="button" class="pd-qty-btn" id="pdQtyMinus">−</button>
+        <input type="number" class="pd-qty-value" id="pdQtyValue" value="{{ product.min_order }}" min="{{ product.min_order }}">
+        <button type="button" class="pd-qty-btn" id="pdQtyPlus">+</button>
+      </div>
+      <span class="pd-qty-hint">Min. order {{ product.min_order }} pcs</span>
+    </div>
+
+    {# Upload Design #}
+    <span class="pd-field-label">Upload Desain</span>
+    <div class="pd-upload-zone" id="uploadZone">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <p class="pd-upload-text">Drag & drop atau klik untuk upload</p>
+      <p class="pd-upload-hint">Format: AI, PDF, PNG (Maks. 50MB)</p>
+      <input type="file" class="pd-upload-input" id="designUpload" accept=".ai,.pdf,.png,.jpg,.jpeg">
+    </div>
+
+    {# Notes #}
+    <textarea class="pd-notes" placeholder="Catatan untuk percetakan (opsional)" rows="2"></textarea>
+
+    {# Action Buttons #}
+    <div class="pd-actions">
+      <button type="button" class="pd-btn-cart" id="pdAddToCart"
+        data-product-id="{{ product.pk }}"
+        data-product-name="{{ product.name }}">
+        Tambah ke Keranjang
+      </button>
+      <button type="button" class="pd-btn-buy">
+        Beli Langsung
+      </button>
+    </div>
+  </div>
+
+</section>
+
+{# ── Tabs: Description / Specs / Guide ──────────────────────── #}
+<section class="pd-tabs-section">
+  <div class="pd-tabs" role="tablist">
+    <button class="pd-tab active" data-tab="desc" role="tab">Deskripsi</button>
+    <button class="pd-tab" data-tab="spec" role="tab">Spesifikasi</button>
+    <button class="pd-tab" data-tab="guide" role="tab">Panduan Desain</button>
+  </div>
+
+  {# Deskripsi #}
+  <div class="pd-tab-panel active" id="tab-desc">
+    <p>{{ product.description|linebreaksbr }}</p>
+    <ul class="pd-features">
+      <li>Material {{ product.material_spec }}</li>
+      <li>Cetak Full Color CMYK dengan tinta kedelai ramah lingkungan</li>
+      <li>Sistem lipat praktis tanpa perlu lem/alat tambahan</li>
+    </ul>
+  </div>
+
+  {# Spesifikasi #}
+  <div class="pd-tab-panel" id="tab-spec">
+    <p><strong>Material:</strong> {{ product.material_spec }}</p>
+    <p><strong>Minimum Order:</strong> {{ product.min_order }} pcs</p>
+    <p><strong>Waktu Produksi:</strong> 5–7 hari kerja</p>
+    <p><strong>Finishing:</strong> Laminasi Glossy / Matte (opsional)</p>
+  </div>
+
+  {# Panduan Desain #}
+  <div class="pd-tab-panel" id="tab-guide">
+    <p>Untuk hasil cetak terbaik, pastikan desain Anda memenuhi kriteria berikut:</p>
+    <ul class="pd-features">
+      <li>Resolusi minimal 300 DPI</li>
+      <li>Mode warna CMYK</li>
+      <li>Bleed area 3mm di setiap sisi</li>
+      <li>Format file: AI, PDF, atau PNG</li>
+    </ul>
+  </div>
+</section>
+
+{# ── Related Products ────────────────────────────────────────── #}
+{% if related_products %}
+<section class="pd-related">
+  <h2 class="pd-related-title">Produk Terkait</h2>
+  <div class="pd-related-grid">
+    {% for rp in related_products %}
+    <a href="{% url 'catalog:product_detail' rp.slug %}" class="pd-related-card">
+      <div class="pd-related-img">
+        {% if rp.image %}
+          <img src="{{ rp.image.url }}" alt="{{ rp.name }}">
+        {% endif %}
+      </div>
+      <span class="pd-related-name">{{ rp.name }}</span>
+      <span class="pd-related-price">Rp {{ rp.price|floatformat:"0" }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  'use strict';
+
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
+  /* ── Thumbnail click ───────────────────────── */
+  document.querySelectorAll('.pd-thumb').forEach(thumb => {
+    thumb.addEventListener('click', function() {
+      document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const mainImg = document.getElementById('mainImg');
+      if (mainImg) mainImg.src = this.dataset.src;
+    });
+  });
+
+  /* ── Size buttons ──────────────────────────── */
+  document.querySelectorAll('.pd-size-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pd-size-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  /* ── Quantity +/- ──────────────────────────── */
+  const qtyInput = document.getElementById('pdQtyValue');
+  const minOrder = parseInt(qtyInput?.min || '1');
+
+  document.getElementById('pdQtyMinus')?.addEventListener('click', () => {
+    let val = parseInt(qtyInput.value) || minOrder;
+    qtyInput.value = Math.max(minOrder, val - 1);
+  });
+  document.getElementById('pdQtyPlus')?.addEventListener('click', () => {
+    let val = parseInt(qtyInput.value) || minOrder;
+    qtyInput.value = val + 1;
+  });
+
+  /* ── Upload zone ───────────────────────────── */
+  const uploadZone = document.getElementById('uploadZone');
+  const uploadInput = document.getElementById('designUpload');
+
+  if (uploadZone && uploadInput) {
+    uploadZone.addEventListener('click', () => uploadInput.click());
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--color-accent)'; });
+    uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.style.borderColor = '';
+      if (e.dataTransfer.files.length) {
+        uploadInput.files = e.dataTransfer.files;
+        uploadZone.querySelector('.pd-upload-text').textContent = e.dataTransfer.files[0].name;
+      }
+    });
+    uploadInput.addEventListener('change', () => {
+      if (uploadInput.files.length) {
+        uploadZone.querySelector('.pd-upload-text').textContent = uploadInput.files[0].name;
+      }
+    });
+  }
+
+  /* ── Tabs ───────────────────────────────────── */
+  document.querySelectorAll('.pd-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.pd-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.pd-tab-panel').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('tab-' + this.dataset.tab)?.classList.add('active');
+    });
+  });
+
+  /* ── Add to Cart ───────────────────────────── */
+  const cartBtn = document.getElementById('pdAddToCart');
+  if (cartBtn) {
+    cartBtn.addEventListener('click', function() {
+      const productId = this.dataset.productId;
+      const qty = parseInt(qtyInput?.value || '1');
+
+      fetch('/cart/add/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ product_id: productId, quantity: qty }),
+      })
+      .then(r => {
+        if (r.status === 403 || r.redirected) {
+          window.location.href = '/auth/login/?next=' + encodeURIComponent(window.location.pathname);
+          return null;
+        }
+        return r.json();
+      })
+      .then(data => {
+        if (!data) return;
+        if (data.success) {
+          this.textContent = '✓ Ditambahkan!';
+          this.style.background = 'var(--color-accent)';
+          // Update badge
+          let badge = document.getElementById('cart-badge');
+          if (badge) {
+            badge.textContent = data.item_count;
+          } else {
+            const cartLink = document.querySelector('.nav-cart-link');
+            if (cartLink) {
+              badge = document.createElement('span');
+              badge.className = 'nav-cart-badge';
+              badge.id = 'cart-badge';
+              badge.textContent = data.item_count;
+              cartLink.appendChild(badge);
+            }
+          }
+          setTimeout(() => {
+            this.textContent = 'Tambah ke Keranjang';
+            this.style.background = '';
+          }, 2000);
+        }
+      })
+      .catch(() => {
+        alert('Gagal menambahkan ke keranjang');
+      });
+    });
+  }
+
+})();
+</script>
 {% endblock %}

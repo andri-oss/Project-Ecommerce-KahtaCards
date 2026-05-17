@@ -1,0 +1,203 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Kelola Produk{% endblock %}
+
+{% block content %}
+{% with active_page='products' %}{% endwith %}
+
+<div class="adm-page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div class="adm-page-title">Kelola Produk</div>
+</div>
+
+<div class="adm-table-wrap">
+  <div class="adm-table-toolbar">
+    <form class="adm-search" method="get" style="max-width:360px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Cari nama produk...">
+    </form>
+    <div style="margin-left:auto;display:flex;gap:10px;align-items:center;">
+      <select name="category" onchange="this.form.submit()" form="filter-cat" style="padding:8px 14px;border:1.5px solid #e8e0d5;border-radius:8px;font-family:inherit;font-size:13px;background:#fff;">
+        <option value="">Semua Kategori</option>
+        {% for cat in categories %}
+        <option value="{{ cat.slug }}" {% if cat.slug == selected_category %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+      <a href="{% url 'dashboard:product_add' %}" class="adm-btn adm-btn-primary">+ Tambah Produk</a>
+    </div>
+  </div>
+
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Info Produk</th>
+        <th>Kategori</th>
+        <th>Harga/Pcs</th>
+        <th>Min. Order</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in page_obj %}
+      <tr>
+        <td>
+          <div class="adm-product-cell">
+            <div class="adm-product-thumb">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+              {% endif %}
+            </div>
+            <div>
+              <div class="adm-product-name">{{ product.name }}</div>
+              <div class="adm-product-sku">SKU: KG-{{ product.category.slug|upper|truncatechars:2 }}-{{ product.pk|stringformat:"03d" }}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="adm-badge adm-badge-active">{{ product.category.name }}</span></td>
+        <td><strong>Rp {{ product.price|floatformat:"0" }}</strong></td>
+        <td>{{ product.min_order }} pcs</td>
+        <td>
+          <div class="adm-toggle">
+            <div class="adm-toggle-switch {% if product.is_active %}active{% endif %}"></div>
+            <span class="adm-toggle-label">{% if product.is_active %}Aktif{% else %}Nonaktif{% endif %}</span>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <a href="{% url 'dashboard:product_edit' product.pk %}" class="adm-link">Edit</a>
+            <button type="button" class="adm-btn-delete" onclick="openDeleteModal({{ product.pk }}, '{{ product.name|escapejs }}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:#8a7060;padding:32px;">Tidak ada produk ditemukan</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="adm-table-footer">
+    <span>Menampilkan {{ page_obj.start_index }}-{{ page_obj.end_index }} dari {{ page_obj.paginator.count }} produk</span>
+    <div class="adm-pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ search }}" class="adm-page-link">‹</a>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+          <a href="?page={{ num }}&q={{ search }}" class="adm-page-link {% if num == page_obj.number %}active{% endif %}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&q={{ search }}" class="adm-page-link">›</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# ── Delete Confirmation Modal ───────────────────────────── #}
+<div class="adm-modal-overlay" id="deleteModal" style="display:none;">
+  <div class="adm-modal">
+    <div class="adm-modal-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c62828" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+    <h3 class="adm-modal-title">Hapus Produk?</h3>
+    <p class="adm-modal-desc">Produk <strong id="deleteProductName"></strong> akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.</p>
+    <div class="adm-modal-actions">
+      <button type="button" class="adm-btn" onclick="closeDeleteModal()">Batal</button>
+      <button type="button" class="adm-btn adm-btn-danger" id="confirmDeleteBtn">Hapus Produk</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.adm-btn-delete {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid #fce4ec;
+  background: #fff;
+  color: #c62828;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+.adm-btn-delete:hover { background: #fce4ec; border-color: #c62828; }
+
+.adm-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(30,20,10,.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+}
+.adm-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.adm-modal-icon { margin-bottom: 16px; }
+.adm-modal-title { font-size: 18px; font-weight: 700; color: #1e140a; margin-bottom: 8px; }
+.adm-modal-desc { font-size: 13px; color: #5c5347; line-height: 1.6; margin-bottom: 24px; }
+.adm-modal-actions { display: flex; gap: 10px; justify-content: center; }
+.adm-btn-danger {
+  background: #c62828 !important;
+  border-color: #c62828 !important;
+  color: #fff !important;
+}
+.adm-btn-danger:hover { background: #b71c1c !important; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  let deleteProductId = null;
+
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
+  window.openDeleteModal = function(pk, name) {
+    deleteProductId = pk;
+    document.getElementById('deleteProductName').textContent = name;
+    document.getElementById('deleteModal').style.display = 'flex';
+  };
+
+  window.closeDeleteModal = function() {
+    document.getElementById('deleteModal').style.display = 'none';
+    deleteProductId = null;
+  };
+
+  // Close on overlay click
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+  });
+
+  // Confirm delete
+  document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (!deleteProductId) return;
+    fetch('/dashboard/products/' + deleteProductId + '/delete/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        closeDeleteModal();
+        location.reload();
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Order #{{ order.order_id }}{% endblock %}
+
+{% block content %}
+{% with active_page='orders' %}{% endwith %}
+
+{# ── Header ──────────────────────────────────────────────── #}
+<div class="adm-detail-header">
+  <div>
+    <a href="{% url 'dashboard:orders' %}" class="adm-link" style="font-size:13px;">← Kembali ke Daftar</a>
+    <h1 class="adm-page-title" style="margin-top:6px;">Order #{{ order.order_id }}</h1>
+    <p class="adm-page-desc" style="display:flex;align-items:center;gap:10px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Dibuat pada {{ order.created_at|date:"d F Y, H:i" }} WIB
+      <span class="adm-badge adm-badge-{{ order.status }}">{{ order.get_status_display }}</span>
+    </p>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button class="adm-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Cetak Invoice
+    </button>
+    <button class="adm-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><path d="M21 3l-7 7"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+      Bagikan Status
+    </button>
+  </div>
+</div>
+
+{# ── Two Column Layout ───────────────────────────────────── #}
+<div class="adm-detail-layout">
+
+  {# ── Left: Products + Notes ─────────────────────────────── #}
+  <div>
+    {# Product Items #}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title" style="justify-content:space-between;">
+        <span>Detail Produk</span>
+        <span style="font-weight:400;font-size:12px;color:#8a7060;">{{ items.count }} Items</span>
+      </div>
+
+      <table class="adm-table" style="margin:-8px -24px;width:calc(100% + 48px);">
+        <thead>
+          <tr>
+            <th>Produk</th>
+            <th>Qty</th>
+            <th>Harga</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>
+              <div class="adm-product-cell">
+                <div class="adm-product-thumb">
+                  {% if item.product_image %}
+                    <img src="{{ item.product_image.url }}" alt="">
+                  {% elif item.product and item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="">
+                  {% endif %}
+                </div>
+                <div>
+                  <div class="adm-product-name">{{ item.product_name }}</div>
+                  {% if item.variant_info %}<div class="adm-product-sku">{{ item.variant_info }}</div>{% endif %}
+                </div>
+              </div>
+            </td>
+            <td>{{ item.quantity }}</td>
+            <td>Rp {{ item.subtotal|floatformat:"0" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div style="padding-top:16px;border-top:1px solid #e8e0d5;margin-top:16px;">
+        <div class="adm-detail-row"><span style="color:#8a7060;">Subtotal</span><span>Rp {{ order.subtotal|floatformat:"0" }}</span></div>
+        <div class="adm-detail-row"><span style="color:#8a7060;">Shipping Fee</span><span>Rp {{ order.shipping_fee|floatformat:"0" }}</span></div>
+        <div class="adm-detail-row" style="font-weight:700;font-size:15px;border-top:1px solid #e8e0d5;padding-top:12px;">
+          <span>Total</span>
+          <span style="color:#c08b3a;">Rp {{ order.total|floatformat:"0" }}</span>
+        </div>
+      </div>
+    </div>
+
+    {# Customer Notes #}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Catatan Pelanggan
+      </div>
+      <div class="adm-blockquote">
+        {% if order.address %}"{{ order.address }}"{% else %}Tidak ada catatan dari pelanggan.{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ── Right: Customer + Shipping + Payment + Status Update ─ #}
+  <div>
+    {# Customer Info #}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Informasi Pelanggan
+      </div>
+      <div class="adm-user-cell" style="margin-bottom:14px;">
+        <div class="adm-avatar adm-avatar-amber" style="width:42px;height:42px;font-size:16px;">{{ order.user.username|make_list|first|upper }}</div>
+        <div>
+          <div style="font-weight:600;">{{ order.recipient_name|default:order.user.username }}</div>
+          <div style="font-size:11px;color:#8a7060;">ID: {{ order.user.pk }}</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#5c5347;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          {{ order.user.email|default:"—" }}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          {{ order.phone|default:"—" }}
+        </div>
+      </div>
+    </div>
+
+    {# Shipping Info #}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">Pengiriman</div>
+      <div class="adm-detail-label">Metode</div>
+      <div class="adm-detail-value" style="margin-bottom:12px;">{{ order.get_shipping_method_display }}</div>
+      <div class="adm-detail-label">Alamat</div>
+      <div class="adm-detail-value" style="margin-bottom:12px;line-height:1.5;">{{ order.address }}, {{ order.city }}, {{ order.province }} {{ order.postal_code }}</div>
+    </div>
+
+    {# Payment Info #}
+    {% if payment %}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">Pembayaran</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div>
+          <div class="adm-detail-label">Metode</div>
+          <div class="adm-detail-value">{{ payment.get_method_display }}</div>
+        </div>
+        <span class="adm-badge adm-badge-{{ payment.status }}">{{ payment.get_status_display }}</span>
+      </div>
+      <div style="padding-top:10px;border-top:1px solid #e8e0d5;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:#8a7060;">Jumlah Dibayar</span>
+        <span style="font-size:16px;font-weight:700;">Rp {{ payment.amount|floatformat:"0" }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    {# Update Status Panel #}
+    <div class="adm-update-panel">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:16px;">Update Status Pesanan</div>
+      <div class="adm-detail-label">Pilih Status Baru</div>
+      <select id="statusSelect">
+        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Menunggu Pembayaran</option>
+        <option value="paid" {% if order.status == 'paid' %}selected{% endif %}>Sudah Dibayar</option>
+        <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Diproses</option>
+        <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Dikirim</option>
+        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Selesai</option>
+        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Dibatalkan</option>
+      </select>
+      <button class="adm-btn-update" id="updateStatusBtn" data-order-pk="{{ order.pk }}">Update Status</button>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const btn = document.getElementById('updateStatusBtn');
+  const sel = document.getElementById('statusSelect');
+  if (!btn || !sel) return;
+
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
+  btn.addEventListener('click', function() {
+    fetch('/dashboard/orders/' + this.dataset.orderPk + '/update-status/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ status: sel.value }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        btn.textContent = '✓ Updated!';
+        btn.style.background = '#2e7d32';
+        setTimeout(() => location.reload(), 800);
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Pelanggan{% endblock %}
+
+{% block content %}
+{% with active_page='customers' %}{% endwith %}
+
+<div class="adm-page-header">
+  <div class="adm-page-title">Pelanggan</div>
+  <p class="adm-page-desc">Kelola data pelanggan Anda</p>
+</div>
+
+<div class="adm-table-wrap">
+  <div class="adm-table-toolbar">
+    <form class="adm-search" method="get" style="max-width:360px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Cari pelanggan...">
+    </form>
+  </div>
+
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Pelanggan</th>
+        <th>Email</th>
+        <th>Telepon</th>
+        <th>Total Pesanan</th>
+        <th>Total Belanja</th>
+        <th>Terdaftar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in page_obj %}
+      <tr>
+        <td>
+          <div class="adm-user-cell">
+            <div class="adm-avatar adm-avatar-{% cycle 'amber' 'dark' 'brown' %}">{{ customer.username|make_list|first|upper }}</div>
+            <div>
+              <div style="font-weight:600;">{{ customer.get_full_name|default:customer.username }}</div>
+              <div style="font-size:11px;color:#8a7060;">@{{ customer.username }}</div>
+            </div>
+          </div>
+        </td>
+        <td>{{ customer.email|default:"—" }}</td>
+        <td>{{ customer.phone_number|default:"—" }}</td>
+        <td><strong>{{ customer.order_count }}</strong></td>
+        <td>{% if customer.total_spent %}Rp {{ customer.total_spent|floatformat:"0" }}{% else %}Rp 0{% endif %}</td>
+        <td>{{ customer.date_joined|date:"d M Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:#8a7060;padding:32px;">Tidak ada pelanggan ditemukan</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="adm-table-footer">
+    <span>Menampilkan {{ page_obj.start_index|default:0 }}-{{ page_obj.end_index|default:0 }} dari {{ page_obj.paginator.count }} pelanggan</span>
+    <div class="adm-pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ search }}" class="adm-page-link">‹</a>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+          <a href="?page={{ num }}&q={{ search }}" class="adm-page-link {% if num == page_obj.number %}active{% endif %}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&q={{ search }}" class="adm-page-link">›</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

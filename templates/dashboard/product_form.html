@@ -1,0 +1,338 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}{% if product %}Edit Produk{% else %}Tambah Produk{% endif %}{% endblock %}
+
+{% block content %}
+
+{# ── Header ──────────────────────────────────────────────── #}
+<div class="adm-page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <a href="{% url 'dashboard:products' %}" class="adm-link" style="font-size:13px;">← Kembali ke Daftar Produk</a>
+    <div class="adm-page-title" style="margin-top:6px;">{% if product %}Edit Produk{% else %}Tambah Produk Baru{% endif %}</div>
+    <p class="adm-page-desc">{% if product %}Perbarui informasi produk "{{ product.name }}"{% else %}Lengkapi form berikut untuk menambahkan produk baru{% endif %}</p>
+  </div>
+</div>
+
+{% if error %}
+<div style="background:#fce4ec;border:1px solid #f8bbd0;border-radius:10px;padding:14px 20px;margin-bottom:20px;color:#c62828;font-size:13px;">
+  <strong>Error:</strong> {{ error }}
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" style="display:grid;grid-template-columns:1fr 340px;gap:24px;">
+  {% csrf_token %}
+
+  {# ── Left: Main Info ───────────────────────────────────── #}
+  <div>
+    {# Basic Info Card #}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        Informasi Produk
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label" for="productName">Nama Produk <span class="pf-required">*</span></label>
+        <input type="text" class="pf-input" id="productName" name="name"
+          value="{% if product %}{{ product.name }}{% elif form_data %}{{ form_data.name }}{% endif %}"
+          placeholder="Contoh: Box Kardus Premium" required>
+      </div>
+
+      <div class="pf-row">
+        <div class="pf-field">
+          <label class="pf-label" for="productCategory">Kategori <span class="pf-required">*</span></label>
+          <select class="pf-input" id="productCategory" name="category" required>
+            <option value="">Pilih Kategori</option>
+            {% for cat in categories %}
+            <option value="{{ cat.pk }}" {% if product and product.category_id == cat.pk %}selected{% elif form_data and form_data.category == cat.pk|stringformat:"d" %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="pf-field">
+          <label class="pf-label" for="productMinOrder">Min. Order <span class="pf-required">*</span></label>
+          <div class="pf-input-suffix">
+            <input type="number" class="pf-input" id="productMinOrder" name="min_order"
+              value="{% if product %}{{ product.min_order }}{% elif form_data %}{{ form_data.min_order }}{% else %}1{% endif %}"
+              min="1" required>
+            <span class="pf-suffix">pcs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label" for="productPrice">Harga per Pcs <span class="pf-required">*</span></label>
+        <div class="pf-input-prefix">
+          <span class="pf-prefix">Rp</span>
+          <input type="number" class="pf-input" id="productPrice" name="price"
+            value="{% if product %}{{ product.price|floatformat:'0' }}{% elif form_data %}{{ form_data.price }}{% else %}0{% endif %}"
+            min="0" required>
+        </div>
+      </div>
+    </div>
+
+    {# Description Card #}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Deskripsi & Spesifikasi
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label" for="productDesc">Deskripsi Produk <span class="pf-required">*</span></label>
+        <textarea class="pf-textarea" id="productDesc" name="description" rows="5"
+          placeholder="Jelaskan produk secara detail..." required>{% if product %}{{ product.description }}{% elif form_data %}{{ form_data.description }}{% endif %}</textarea>
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label" for="productMaterial">Spesifikasi Material <span class="pf-required">*</span></label>
+        <textarea class="pf-textarea" id="productMaterial" name="material_spec" rows="3"
+          placeholder="Contoh: Kraft 350gsm, laminasi matte" required>{% if product %}{{ product.material_spec }}{% elif form_data %}{{ form_data.material_spec }}{% endif %}</textarea>
+      </div>
+    </div>
+  </div>
+
+  {# ── Right: Image + Status + Actions ───────────────────── #}
+  <div>
+    {# Image Upload #}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Foto Produk
+      </div>
+
+      <div class="pf-upload-zone" id="uploadZone">
+        {% if product and product.image %}
+        <div class="pf-preview" id="imagePreview">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        </div>
+        {% else %}
+        <div class="pf-preview" id="imagePreview" style="display:none;"></div>
+        {% endif %}
+
+        <div class="pf-upload-placeholder" id="uploadPlaceholder" {% if product and product.image %}style="display:none;"{% endif %}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p class="pf-upload-text">Klik atau drag foto produk</p>
+          <p class="pf-upload-hint">JPG, PNG — Maks. 5MB</p>
+        </div>
+        <input type="file" name="image" id="imageInput" accept="image/*" style="display:none;">
+      </div>
+    </div>
+
+    {# Status #}
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">Status Produk</div>
+      <label class="pf-switch-label">
+        <div class="pf-switch-info">
+          <span class="pf-switch-name">Aktifkan Produk</span>
+          <span class="pf-switch-desc">Produk akan muncul di katalog publik</span>
+        </div>
+        <label class="pf-switch">
+          <input type="checkbox" name="is_active" {% if product %}{% if product.is_active %}checked{% endif %}{% else %}checked{% endif %}>
+          <span class="pf-switch-slider"></span>
+        </label>
+      </label>
+    </div>
+
+    {# Actions #}
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button type="submit" class="adm-btn adm-btn-primary" style="justify-content:center;padding:14px;border-radius:12px;font-size:14px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        {% if product %}Simpan Perubahan{% else %}Tambah Produk{% endif %}
+      </button>
+      <a href="{% url 'dashboard:products' %}" class="adm-btn" style="justify-content:center;padding:14px;border-radius:12px;font-size:14px;">
+        Batal
+      </a>
+    </div>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Product Form Styles ─────────────────────────────────── */
+.pf-field { margin-bottom: 18px; }
+
+.pf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.pf-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #8a7060;
+  margin-bottom: 6px;
+}
+
+.pf-required { color: #c62828; }
+
+.pf-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e8e0d5;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1e140a;
+  background: #fff;
+  outline: none;
+  transition: border-color .2s;
+  box-sizing: border-box;
+}
+.pf-input:focus { border-color: #c08b3a; }
+
+.pf-input-prefix, .pf-input-suffix {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e8e0d5;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color .2s;
+  background: #fff;
+}
+.pf-input-prefix:focus-within,
+.pf-input-suffix:focus-within { border-color: #c08b3a; }
+
+.pf-prefix, .pf-suffix {
+  padding: 11px 14px;
+  background: #faf8f5;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a7060;
+  white-space: nowrap;
+  border: none;
+}
+.pf-input-prefix .pf-input,
+.pf-input-suffix .pf-input { border: none; border-radius: 0; }
+
+.pf-textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e8e0d5;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1e140a;
+  background: #fff;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color .2s;
+  box-sizing: border-box;
+}
+.pf-textarea:focus { border-color: #c08b3a; }
+
+/* ── Upload Zone ─────────────────────────────────────────── */
+.pf-upload-zone {
+  border: 2px dashed #e8e0d5;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: #faf8f5;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pf-upload-zone:hover {
+  border-color: #c08b3a;
+  background: #f5f0e8;
+}
+
+.pf-upload-placeholder { color: #8a7060; }
+.pf-upload-text { font-size: 13px; font-weight: 600; margin-top: 8px; }
+.pf-upload-hint { font-size: 11px; color: #b0a090; margin-top: 4px; }
+
+.pf-preview { width: 100%; }
+.pf-preview img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* ── Switch ──────────────────────────────────────────────── */
+.pf-switch-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.pf-switch-name { font-size: 14px; font-weight: 600; color: #1e140a; display: block; }
+.pf-switch-desc { font-size: 12px; color: #8a7060; display: block; margin-top: 2px; }
+
+.pf-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.pf-switch input { opacity: 0; width: 0; height: 0; }
+.pf-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #e8e0d5;
+  border-radius: 24px;
+  transition: .3s;
+}
+.pf-switch-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  left: 3px; top: 3px;
+  transition: .3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.pf-switch input:checked + .pf-switch-slider { background: #c08b3a; }
+.pf-switch input:checked + .pf-switch-slider::before { transform: translateX(20px); }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const zone = document.getElementById('uploadZone');
+  const input = document.getElementById('imageInput');
+  const preview = document.getElementById('imagePreview');
+  const placeholder = document.getElementById('uploadPlaceholder');
+
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#c08b3a'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.style.borderColor = '';
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      showPreview(e.dataTransfer.files[0]);
+    }
+  });
+  input.addEventListener('change', () => {
+    if (input.files.length) showPreview(input.files[0]);
+  });
+
+  function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
+      preview.style.display = '';
+      placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+})();
+</script>
+{% endblock %}

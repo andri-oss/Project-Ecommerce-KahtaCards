@@ -1,0 +1,107 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Daftar Pesanan{% endblock %}
+
+{% block content %}
+{% with active_page='orders' %}{% endwith %}
+
+<div class="adm-page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <div class="adm-page-subtitle">Manajemen Atelier</div>
+    <div class="adm-page-title">Daftar Pesanan</div>
+  </div>
+  <a href="#" class="adm-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Ekspor CSV
+  </a>
+</div>
+
+{# ── Filters ─────────────────────────────────────────────── #}
+<div class="adm-table-wrap">
+  <div class="adm-table-toolbar" style="flex-direction:column;align-items:stretch;gap:16px;">
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      <div>
+        <div class="adm-detail-label">Status Pesanan</div>
+        <div class="adm-filter-pills" style="margin-top:6px;">
+          <a href="{% url 'dashboard:orders' %}" class="adm-filter-pill {% if not status_filter %}active{% endif %}">Semua</a>
+          <a href="?status=pending" class="adm-filter-pill {% if status_filter == 'pending' %}active{% endif %}">Belum Bayar</a>
+          <a href="?status=processing" class="adm-filter-pill {% if status_filter == 'processing' %}active{% endif %}">Diproses</a>
+          <a href="?status=shipped" class="adm-filter-pill {% if status_filter == 'shipped' %}active{% endif %}">Dikirim</a>
+          <a href="?status=delivered" class="adm-filter-pill {% if status_filter == 'delivered' %}active{% endif %}">Selesai</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>No. Pesanan</th>
+        <th>Pelanggan</th>
+        <th>Tanggal</th>
+        <th>Total</th>
+        <th>Status Pesanan</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in page_obj %}
+      <tr>
+        <td><strong>#{{ order.order_id }}</strong></td>
+        <td>
+          <div class="adm-user-cell">
+            <div class="adm-avatar adm-avatar-{% cycle 'amber' 'dark' 'brown' %}">{{ order.user.username|make_list|first|upper }}</div>
+            {{ order.recipient_name|default:order.user.username }}
+          </div>
+        </td>
+        <td>{{ order.created_at|date:"d M Y" }}</td>
+        <td><strong>Rp {{ order.total|floatformat:"0" }}</strong></td>
+        <td>
+          <span class="adm-badge adm-badge-{{ order.status }}">{{ order.get_status_display }}</span>
+        </td>
+        <td><a href="{% url 'dashboard:order_detail' order.pk %}" class="adm-link">Detail →</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:#8a7060;padding:32px;">Belum ada pesanan</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="adm-table-footer">
+    <span>Menampilkan {{ page_obj.start_index|default:0 }}-{{ page_obj.end_index|default:0 }} dari {{ page_obj.paginator.count }} pesanan</span>
+    <div class="adm-pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}" class="adm-page-link">‹</a>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+          <a href="?page={{ num }}&status={{ status_filter }}" class="adm-page-link {% if num == page_obj.number %}active{% endif %}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}" class="adm-page-link">›</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# ── Summary Cards ───────────────────────────────────────── #}
+<div class="adm-summary-row">
+  <div class="adm-summary-card">
+    <div class="adm-summary-label">Menunggu Pembayaran</div>
+    <div class="adm-summary-value">{{ summary.pending }}</div>
+  </div>
+  <div class="adm-summary-card">
+    <div class="adm-summary-label">Sedang Diproses</div>
+    <div class="adm-summary-value">{{ summary.processing }}</div>
+  </div>
+  <div class="adm-summary-card">
+    <div class="adm-summary-label">Dalam Pengiriman</div>
+    <div class="adm-summary-value">{{ summary.shipped }}</div>
+  </div>
+  <div class="adm-summary-card">
+    <div class="adm-summary-label">Total Selesai (Bulan Ini)</div>
+    <div class="adm-summary-value">{{ summary.delivered }}</div>
+  </div>
+</div>
+
+{% endblock %}

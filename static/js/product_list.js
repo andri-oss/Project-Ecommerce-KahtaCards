@@ -19,34 +19,80 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ── Add-to-cart buttons ───────────────────────────────────────── */
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
   document.querySelectorAll('.btn-cart').forEach(btn => {
     btn.addEventListener('click', function (e) {
       e.preventDefault();
-      const card = this.closest('.product-card');
-      const productName = card?.querySelector('.card-name')?.textContent?.trim() ?? 'Produk';
+      const productId = this.dataset.productId;
+      const productName = this.dataset.productName || 'Produk';
 
-      // visual feedback
-      this.classList.add('added');
-      this.innerHTML = `
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        Ditambahkan!`;
+      // Call backend
+      fetch('/cart/add/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      })
+        .then(r => {
+          if (r.status === 403 || r.redirected) {
+            // Not logged in — redirect to login
+            window.location.href = '/auth/login/?next=' + encodeURIComponent(window.location.pathname);
+            return null;
+          }
+          return r.json();
+        })
+        .then(data => {
+          if (!data) return;
 
-      showToast(`${productName} ditambahkan ke keranjang`);
+          if (data.success) {
+            // Visual feedback on button
+            this.classList.add('added');
+            this.innerHTML = `
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Ditambahkan!`;
 
-      // reset after 2s
-      setTimeout(() => {
-        this.classList.remove('added');
-        this.innerHTML = `
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-          </svg>
-          Tambah ke Keranjang`;
-      }, 2000);
+            showToast(data.message || `${productName} ditambahkan ke keranjang`);
+
+            // Update navbar badge
+            let badge = document.getElementById('cart-badge');
+            if (badge) {
+              badge.textContent = data.item_count;
+            } else {
+              const cartLink = document.querySelector('.nav-cart-link');
+              if (cartLink) {
+                badge = document.createElement('span');
+                badge.className = 'nav-cart-badge';
+                badge.id = 'cart-badge';
+                badge.textContent = data.item_count;
+                cartLink.appendChild(badge);
+              }
+            }
+
+            // Reset button after 2s
+            setTimeout(() => {
+              this.classList.remove('added');
+              this.innerHTML = `
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                Tambah ke Keranjang`;
+            }, 2000);
+          }
+        })
+        .catch(() => {
+          showToast('Gagal menambahkan ke keranjang');
+        });
     });
   });
 

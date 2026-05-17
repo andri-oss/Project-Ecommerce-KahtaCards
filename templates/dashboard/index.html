@@ -1,0 +1,160 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% with active_page='dashboard' %}{% endwith %}
+
+{# ── Page Header ─────────────────────────────────────────── #}
+<div class="adm-page-header">
+  <div class="adm-page-title">Admin Overview</div>
+  <p class="adm-page-desc">Selamat datang kembali, berikut performa toko Anda hari ini.</p>
+</div>
+
+{# ── Stat Cards ──────────────────────────────────────────── #}
+<div class="adm-stats">
+  <div class="adm-stat-card">
+    <div class="adm-stat-top">
+      <div class="adm-stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <span class="adm-stat-badge">+12%</span>
+    </div>
+    <div class="adm-stat-label">Total Pesanan Hari Ini</div>
+    <div class="adm-stat-value">{{ total_orders_today }}</div>
+  </div>
+
+  <div class="adm-stat-card">
+    <div class="adm-stat-top">
+      <div class="adm-stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </div>
+      <span class="adm-stat-badge">+8.4%</span>
+    </div>
+    <div class="adm-stat-label">Total Pendapatan</div>
+    <div class="adm-stat-value">Rp {{ revenue_month|floatformat:"0" }}</div>
+  </div>
+
+  <div class="adm-stat-card">
+    <div class="adm-stat-top">
+      <div class="adm-stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </div>
+      <span class="adm-stat-badge amber">Aktif</span>
+    </div>
+    <div class="adm-stat-label">Pesanan Baru</div>
+    <div class="adm-stat-value">{{ new_orders }}</div>
+  </div>
+
+  <div class="adm-stat-card">
+    <div class="adm-stat-top">
+      <div class="adm-stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      </div>
+      <span class="adm-stat-badge">Stok Aman</span>
+    </div>
+    <div class="adm-stat-label">Produk Aktif</div>
+    <div class="adm-stat-value">{{ active_products }}</div>
+  </div>
+</div>
+
+{# ── Charts Row ──────────────────────────────────────────── #}
+<div class="adm-charts-row">
+  {# Revenue Bar Chart #}
+  <div class="adm-chart-card">
+    <div class="adm-chart-header">
+      <div>
+        <div class="adm-chart-title">Grafik Pendapatan</div>
+        <div class="adm-chart-subtitle">Data penjualan per periode</div>
+      </div>
+    </div>
+    <div class="adm-bar-chart">
+      {% for day in revenue_days %}
+      <div class="adm-bar-item">
+        <div class="adm-bar" style="height: {% if day.value %}{{ day.value|divisibleby:1000 }}{% else %}4{% endif %}px; min-height: 4px;"></div>
+        <span class="adm-bar-label">{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Status Donut #}
+  <div class="adm-chart-card">
+    <div class="adm-chart-header">
+      <div>
+        <div class="adm-chart-title">Status Pesanan</div>
+        <div class="adm-chart-subtitle">Distribusi status saat ini</div>
+      </div>
+    </div>
+    <div class="adm-donut-wrap">
+      {% with total=status_counts.delivered|add:status_counts.processing|add:status_counts.cancelled %}
+      <div class="adm-donut" style="background: conic-gradient(#c08b3a 0deg {% if total > 0 %}{{ status_counts.delivered|divisibleby:1 }}deg{% else %}120deg{% endif %}, #3a2a1a {% if total > 0 %}{{ status_counts.delivered|divisibleby:1 }}deg{% else %}120deg{% endif %} {% if total > 0 %}240deg{% else %}240deg{% endif %}, #c62828 240deg 360deg);">
+        <div class="adm-donut-center" style="width:90px;height:90px;background:#fff;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div class="adm-donut-number">{{ total }}</div>
+          <div class="adm-donut-sub">Total</div>
+        </div>
+      </div>
+      {% endwith %}
+      <div class="adm-donut-legend">
+        <div class="adm-legend-item">
+          <span class="adm-legend-label"><span class="adm-legend-dot" style="background:#c08b3a;"></span> Selesai</span>
+          <span class="adm-legend-value">{{ status_counts.delivered }}</span>
+        </div>
+        <div class="adm-legend-item">
+          <span class="adm-legend-label"><span class="adm-legend-dot" style="background:#3a2a1a;"></span> Mproses</span>
+          <span class="adm-legend-value">{{ status_counts.processing }}</span>
+        </div>
+        <div class="adm-legend-item">
+          <span class="adm-legend-label"><span class="adm-legend-dot" style="background:#c62828;"></span> Dibatalkan</span>
+          <span class="adm-legend-value">{{ status_counts.cancelled }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Recent Orders Table ─────────────────────────────────── #}
+<div class="adm-table-wrap">
+  <div class="adm-table-toolbar">
+    <div>
+      <div class="adm-chart-title">Pesanan Terbaru</div>
+      <div class="adm-chart-subtitle">Daftar 10 transaksi terakhir</div>
+    </div>
+    <div style="margin-left:auto;">
+      <a href="{% url 'dashboard:orders' %}" class="adm-link">Lihat Semua →</a>
+    </div>
+  </div>
+
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>No. Pesanan</th>
+        <th>Pelanggan</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in recent_orders %}
+      <tr>
+        <td><strong>#{{ order.order_id }}</strong></td>
+        <td>
+          <div class="adm-user-cell">
+            <div class="adm-avatar adm-avatar-amber">{{ order.user.username|make_list|first|upper }}</div>
+            {{ order.user.get_full_name|default:order.user.username }}
+          </div>
+        </td>
+        <td>Rp {{ order.total|floatformat:"0" }}</td>
+        <td>
+          <span class="adm-badge adm-badge-{{ order.status }}">{{ order.get_status_display }}</span>
+        </td>
+        <td><a href="{% url 'dashboard:order_detail' order.pk %}" class="adm-link">Detail</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;color:#8a7060;padding:32px;">Belum ada pesanan</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -30,11 +30,9 @@
       <p class="card-subtitle">Silakan masuk ke akun Anda</p>
     </div>
 
-    {% if form.non_field_errors %}
+    {% if error %}
     <div class="alert-error" role="alert">
-      {% for error in form.non_field_errors %}
-        <span>{{ error }}</span>
-      {% endfor %}
+      <span>{{ error }}</span>
     </div>
     {% endif %}
 
@@ -42,27 +40,24 @@
       {% csrf_token %}
 
       <!-- Email field -->
-      <div class="field-group {% if form.username.errors %}has-error{% endif %}">
-        <label class="field-label" for="id_username">Email Address</label>
+      <div class="field-group">
+        <label class="field-label" for="id_username">Username</label>
         <div class="input-wrapper">
           <input
             type="text"
             name="username"
             id="id_username"
             class="field-input"
-            placeholder="nama@email.com"
-            value="{{ form.username.value|default:'' }}"
+            placeholder="nama_pengguna"
+            value="{{ username_value|default:'' }}"
             autocomplete="username"
             autofocus
           >
         </div>
-        {% if form.username.errors %}
-          <span class="field-error">{{ form.username.errors.0 }}</span>
-        {% endif %}
       </div>
 
       <!-- Password field -->
-      <div class="field-group {% if form.password.errors %}has-error{% endif %}">
+      <div class="field-group">
         <label class="field-label" for="id_password">Password</label>
         <div class="input-wrapper">
           <input
@@ -87,9 +82,6 @@
             </svg>
           </button>
         </div>
-        {% if form.password.errors %}
-          <span class="field-error">{{ form.password.errors.0 }}</span>
-        {% endif %}
       </div>
 
       <!-- Remember me + Forgot password -->
@@ -131,7 +123,7 @@
   <footer class="login-footer">
     <p class="register-prompt">
       Belum punya akun?
-      <a href="#" class="register-link">Daftar Sekarang</a>
+      <a href="{% url 'accounts:register' %}" class="register-link">Daftar Sekarang</a>
     </p>
     <p class="footer-tagline">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -146,5 +138,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src=""></script>
+<script src="{% static 'js/login.js' %}"></script>
 {% endblock %}

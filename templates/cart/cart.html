@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Keranjang Belanja — Kahta Grafika{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cart-main">
+  <div class="container">
+
+    <h1 class="cart-page-title reveal">Keranjang Belanja</h1>
+
+    {% if items %}
+    <div class="cart-layout">
+
+      <!-- ── Cart Items ───────────────────────────────────── -->
+      <div class="cart-items reveal">
+        {% for item in items %}
+        <div class="cart-item" data-item-id="{{ item.id }}">
+          <div class="cart-item-img">
+            {% if item.product.image %}
+              <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+            {% else %}
+              <div class="cart-item-placeholder"></div>
+            {% endif %}
+          </div>
+
+          <div class="cart-item-body">
+            <div class="cart-item-header">
+              <div>
+                <h3 class="cart-item-name">{{ item.product.name }}</h3>
+                {% if item.design_file %}
+                  <div class="cart-item-file">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    {{ item.design_file.name|cut:"cart_designs/" }}
+                  </div>
+                {% endif %}
+                {% if item.design_note %}
+                  <p class="cart-item-note">"{{ item.design_note }}"</p>
+                {% endif %}
+              </div>
+              <button class="cart-item-remove" data-item-id="{{ item.id }}" aria-label="Hapus item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="cart-item-footer">
+              <div class="qty-control">
+                <button class="qty-btn qty-minus" data-item-id="{{ item.id }}">−</button>
+                <span class="qty-value" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+                <button class="qty-btn qty-plus" data-item-id="{{ item.id }}">+</button>
+              </div>
+              <div class="cart-item-price">
+                <span class="price-label">SUBTOTAL</span>
+                <span class="price-value" id="subtotal-{{ item.id }}">Rp {{ item.subtotal|floatformat:"0" }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- ── Order Summary ────────────────────────────────── -->
+      <aside class="cart-summary reveal reveal-delay-1">
+        <h2 class="summary-title">Ringkasan Pesanan</h2>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal">Rp {{ cart.total|floatformat:"0" }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Ongkos Kirim</span>
+          <span class="text-muted">TBD</span>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <span id="cart-total">Rp {{ cart.total|floatformat:"0" }}</span>
+        </div>
+
+        <a href="{% url 'orders:checkout_shipping' %}" class="btn-checkout">Lanjut ke Checkout</a>
+
+        <div class="summary-secure">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          SECURE TRANSACTION
+        </div>
+      </aside>
+
+    </div>
+
+    {% else %}
+    <!-- ── Empty Cart ─────────────────────────────────────── -->
+    <div class="cart-empty reveal">
+      <div class="cart-empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </div>
+      <h2 class="cart-empty-title">Keranjang Anda kosong</h2>
+      <p class="cart-empty-desc">Jelajahi katalog kami dan temukan kemasan yang sempurna untuk bisnis Anda.</p>
+      <a href="{% url 'catalog:product_list' %}" class="btn btn-primary">Lihat Katalog</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/cart.js' %}"></script>
+{% endblock %}

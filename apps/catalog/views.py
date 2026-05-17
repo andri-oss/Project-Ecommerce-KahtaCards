@@ -32,8 +32,15 @@ def product_list(request):
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, is_active=True)
 
+    # Related products from same category
+    related_products = Product.objects.filter(
+        category=product.category,
+        is_active=True
+    ).exclude(id=product.id)[:4]
+
     return render(request, 'catalog/product_detail.html', {
-        'product': product
+        'product': product,
+        'related_products': related_products,
     })
 
 

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pesanan Berhasil — Kahta Grafika{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="checkout-main">
+  <div class="container">
+
+    <!-- Success Icon -->
+    <div class="success-header reveal">
+      <div class="success-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h1 class="success-title">Pesanan Berhasil!</h1>
+      <p class="success-order-id">ORDER ID: #{{ order.order_id }}</p>
+    </div>
+
+    <!-- Order Details Card -->
+    <div class="success-card reveal reveal-delay-1">
+
+      <div class="success-section-label">RINGKASAN PRODUK</div>
+      <div class="success-items">
+        {% for item in order_items %}
+        <div class="success-item">
+          <div class="success-item-img">
+            {% if item.product and item.product.image %}
+              <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
+            {% else %}
+              <div class="summary-item-placeholder"></div>
+            {% endif %}
+          </div>
+          <div class="success-item-info">
+            <div class="success-item-name">{{ item.product_name }}</div>
+            <div class="success-item-meta">{% if item.variant_info %}{{ item.variant_info }} • {% endif %}Qty: {{ item.quantity }}</div>
+          </div>
+          <div class="success-item-price">Rp {{ item.subtotal|floatformat:"0" }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="success-shipping-row">
+        <div>
+          <div class="success-section-label">METODE PENGIRIMAN</div>
+          <div class="success-shipping-value">{{ order.get_shipping_method_display }}</div>
+        </div>
+        <div>
+          <div class="success-section-label">ESTIMASI TIBA</div>
+          <div class="success-shipping-value">{{ order.created_at|date:"d F Y" }}</div>
+        </div>
+      </div>
+
+      <div class="success-totals">
+        <div class="summary-row"><span>Subtotal</span><span>Rp {{ order.subtotal|floatformat:"0" }}</span></div>
+        <div class="summary-row"><span>Shipping Fee</span><span>Rp {{ order.shipping_fee|floatformat:"0" }}</span></div>
+        <div class="summary-divider"></div>
+        <div class="summary-row summary-total"><span>Total Pembayaran</span><span>Rp {{ order.total|floatformat:"0" }}</span></div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="success-actions reveal reveal-delay-2">
+      <a href="{% url 'catalog:product_list' %}" class="btn btn-primary">Lacak Pesanan</a>
+      <a href="{% url 'catalog:product_list' %}" class="btn btn-outline">Lanjut Belanja</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
