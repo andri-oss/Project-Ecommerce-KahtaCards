@@ -102,16 +102,35 @@ document.addEventListener('DOMContentLoaded', () => {
     sortSelect.addEventListener('change', () => {
       const url = new URL(window.location.href);
       url.searchParams.set('sort', sortSelect.value);
+      url.searchParams.delete('page');
       window.location.href = url.toString();
     });
   }
 
-  /* ── Filter form: preserve page=1 on submit ────────────────────── */
+  /* ── Filter form: include sort param on submit ─────────────────── */
   const filterForm = document.getElementById('filter-form');
   if (filterForm) {
-    filterForm.addEventListener('submit', () => {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('page');
+    filterForm.addEventListener('submit', (e) => {
+      // Add sort value as hidden input if sort is set
+      const currentSort = new URL(window.location.href).searchParams.get('sort');
+      if (currentSort) {
+        let hidden = filterForm.querySelector('input[name="sort"]');
+        if (!hidden) {
+          hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'sort';
+          filterForm.appendChild(hidden);
+        }
+        hidden.value = currentSort;
+      }
+
+      // Remove empty fields to keep URL clean
+      filterForm.querySelectorAll('input, select').forEach(el => {
+        if (el.type === 'radio' && !el.checked) return;
+        if (el.value === '' || el.value === '10000') {
+          el.disabled = true;
+        }
+      });
     });
   }
 
