@@ -1,0 +1,60 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Edit Kategori{% endblock %}
+
+{% block content %}
+
+<div class="adm-page-header">
+  <a href="{% url 'dashboard:categories' %}" class="adm-link" style="font-size:13px;">← Kembali ke Daftar Kategori</a>
+  <div class="adm-page-title" style="margin-top:6px;">Edit Kategori: {{ category.name }}</div>
+</div>
+
+<div style="max-width:600px;">
+  <div class="adm-detail-card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="pf-field">
+        <label class="pf-label" for="catName">Nama Kategori <span class="pf-required">*</span></label>
+        <input type="text" class="pf-input" id="catName" name="name" value="{{ category.name }}" required>
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label" for="catDesc">Deskripsi</label>
+        <textarea class="pf-textarea" id="catDesc" name="description" rows="3">{{ category.description }}</textarea>
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label">Gambar Kategori</label>
+        {% if category.image %}
+        <div style="margin-bottom:10px;">
+          <img src="{{ category.image.url }}" style="max-height:100px;border-radius:8px;">
+        </div>
+        {% endif %}
+        <input type="file" name="image" accept="image/*" class="pf-input" style="padding:8px;">
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="adm-btn adm-btn-primary" style="flex:1;justify-content:center;padding:12px;border-radius:10px;">
+          Simpan Perubahan
+        </button>
+        <a href="{% url 'dashboard:categories' %}" class="adm-btn" style="flex:1;justify-content:center;padding:12px;border-radius:10px;">
+          Batal
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.pf-field { margin-bottom: 16px; }
+.pf-label { display: block; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #8a7060; margin-bottom: 6px; }
+.pf-required { color: #c62828; }
+.pf-input { width: 100%; padding: 10px 14px; border: 1.5px solid #e8e0d5; border-radius: 10px; font-family: inherit; font-size: 14px; color: #1e140a; background: #fff; outline: none; transition: border-color .2s; box-sizing: border-box; }
+.pf-input:focus { border-color: #c08b3a; }
+.pf-textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #e8e0d5; border-radius: 10px; font-family: inherit; font-size: 14px; color: #1e140a; background: #fff; outline: none; resize: vertical; min-height: 60px; transition: border-color .2s; box-sizing: border-box; }
+.pf-textarea:focus { border-color: #c08b3a; }
+</style>
+{% endblock %}

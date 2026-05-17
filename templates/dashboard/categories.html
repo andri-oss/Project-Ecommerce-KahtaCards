@@ -1,0 +1,238 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Kelola Kategori{% endblock %}
+
+{% block content %}
+
+<div class="adm-page-header">
+  <div class="adm-page-title">Kelola Kategori Produk</div>
+  <p class="adm-page-desc">Tambah dan kelola jenis produk yang tersedia di toko Anda</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 380px;gap:24px;">
+
+  {# ── Category List ─────────────────────────────────────── #}
+  <div class="adm-table-wrap">
+    <div class="adm-table-toolbar">
+      <div class="adm-chart-title">Daftar Kategori</div>
+    </div>
+
+    <table class="adm-table">
+      <thead>
+        <tr>
+          <th>Kategori</th>
+          <th>Slug</th>
+          <th>Jumlah Produk</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr id="cat-row-{{ cat.pk }}">
+          <td>
+            <div class="adm-product-cell">
+              <div class="cat-icon">
+                {% if cat.image %}
+                  <img src="{{ cat.image.url }}" alt="{{ cat.name }}">
+                {% else %}
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                {% endif %}
+              </div>
+              <div>
+                <div class="adm-product-name">{{ cat.name }}</div>
+                {% if cat.description %}<div class="adm-product-sku">{{ cat.description|truncatechars:50 }}</div>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td><code style="font-size:12px;background:#f5f0e8;padding:3px 8px;border-radius:4px;">{{ cat.slug }}</code></td>
+          <td>
+            <span class="adm-badge adm-badge-active">{{ cat.product_count }} produk</span>
+          </td>
+          <td>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <a href="{% url 'dashboard:category_edit' cat.pk %}" class="adm-link">Edit</a>
+              <button type="button" class="adm-btn-delete" onclick="openDeleteCat({{ cat.pk }}, '{{ cat.name|escapejs }}', {{ cat.product_count }})">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:#8a7060;padding:32px;">Belum ada kategori</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# ── Add Category Form ─────────────────────────────────── #}
+  <div>
+    <div class="adm-detail-card">
+      <div class="adm-detail-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Tambah Kategori Baru
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="pf-field">
+          <label class="pf-label" for="catName">Nama Kategori <span class="pf-required">*</span></label>
+          <input type="text" class="pf-input" id="catName" name="name" placeholder="Contoh: Box, Amplop, Paper Bag" required>
+        </div>
+
+        <div class="pf-field">
+          <label class="pf-label" for="catDesc">Deskripsi</label>
+          <textarea class="pf-textarea" id="catDesc" name="description" rows="3" placeholder="Deskripsi singkat kategori (opsional)"></textarea>
+        </div>
+
+        <div class="pf-field">
+          <label class="pf-label">Gambar Kategori</label>
+          <div class="cat-upload" id="catUploadZone">
+            <div class="cat-preview" id="catPreview" style="display:none;"></div>
+            <div id="catPlaceholder">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span style="font-size:12px;margin-top:4px;">Upload gambar</span>
+            </div>
+            <input type="file" name="image" id="catImageInput" accept="image/*" style="display:none;">
+          </div>
+        </div>
+
+        <button type="submit" class="adm-btn adm-btn-primary" style="width:100%;justify-content:center;padding:12px;border-radius:10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Kategori
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{# ── Delete Modal ────────────────────────────────────────── #}
+<div class="adm-modal-overlay" id="deleteCatModal" style="display:none;">
+  <div class="adm-modal">
+    <div class="adm-modal-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c62828" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+    <h3 class="adm-modal-title">Hapus Kategori?</h3>
+    <p class="adm-modal-desc" id="deleteCatDesc"></p>
+    <div class="adm-modal-actions">
+      <button type="button" class="adm-btn" onclick="closeCatModal()">Batal</button>
+      <button type="button" class="adm-btn adm-btn-danger" id="confirmDeleteCat">Hapus</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.cat-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: #f5f0e8;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; flex-shrink: 0;
+  color: #8a7060;
+}
+.cat-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+.cat-upload {
+  border: 2px dashed #e8e0d5;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: #faf8f5;
+  color: #8a7060;
+  display: flex; flex-direction: column; align-items: center;
+}
+.cat-upload:hover { border-color: #c08b3a; background: #f5f0e8; }
+.cat-preview img { max-height: 100px; border-radius: 6px; }
+
+.pf-field { margin-bottom: 16px; }
+.pf-label { display: block; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #8a7060; margin-bottom: 6px; }
+.pf-required { color: #c62828; }
+.pf-input { width: 100%; padding: 10px 14px; border: 1.5px solid #e8e0d5; border-radius: 10px; font-family: inherit; font-size: 14px; color: #1e140a; background: #fff; outline: none; transition: border-color .2s; box-sizing: border-box; }
+.pf-input:focus { border-color: #c08b3a; }
+.pf-textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #e8e0d5; border-radius: 10px; font-family: inherit; font-size: 14px; color: #1e140a; background: #fff; outline: none; resize: vertical; min-height: 60px; transition: border-color .2s; box-sizing: border-box; }
+.pf-textarea:focus { border-color: #c08b3a; }
+
+.adm-btn-delete { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #fce4ec; background: #fff; color: #c62828; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; }
+.adm-btn-delete:hover { background: #fce4ec; border-color: #c62828; }
+
+.adm-modal-overlay { position: fixed; inset: 0; background: rgba(30,20,10,.5); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.adm-modal { background: #fff; border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.adm-modal-icon { margin-bottom: 16px; }
+.adm-modal-title { font-size: 18px; font-weight: 700; color: #1e140a; margin-bottom: 8px; }
+.adm-modal-desc { font-size: 13px; color: #5c5347; line-height: 1.6; margin-bottom: 24px; }
+.adm-modal-actions { display: flex; gap: 10px; justify-content: center; }
+.adm-btn-danger { background: #c62828 !important; border-color: #c62828 !important; color: #fff !important; }
+.adm-btn-danger:hover { background: #b71c1c !important; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  // Image upload preview
+  const zone = document.getElementById('catUploadZone');
+  const input = document.getElementById('catImageInput');
+  const preview = document.getElementById('catPreview');
+  const placeholder = document.getElementById('catPlaceholder');
+
+  zone.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    if (input.files.length) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.innerHTML = '<img src="' + e.target.result + '">';
+        preview.style.display = '';
+        placeholder.style.display = 'none';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  });
+
+  // Delete modal
+  let deleteCatId = null;
+
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
+  window.openDeleteCat = function(pk, name, count) {
+    deleteCatId = pk;
+    const desc = count > 0
+      ? 'Kategori <strong>' + name + '</strong> masih memiliki <strong>' + count + ' produk</strong>. Pindahkan produk terlebih dahulu sebelum menghapus.'
+      : 'Kategori <strong>' + name + '</strong> akan dihapus secara permanen.';
+    document.getElementById('deleteCatDesc').innerHTML = desc;
+    document.getElementById('confirmDeleteCat').disabled = count > 0;
+    document.getElementById('confirmDeleteCat').style.opacity = count > 0 ? '0.4' : '1';
+    document.getElementById('deleteCatModal').style.display = 'flex';
+  };
+
+  window.closeCatModal = function() {
+    document.getElementById('deleteCatModal').style.display = 'none';
+    deleteCatId = null;
+  };
+
+  document.getElementById('deleteCatModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCatModal();
+  });
+
+  document.getElementById('confirmDeleteCat').addEventListener('click', function() {
+    if (!deleteCatId) return;
+    fetch('/dashboard/categories/' + deleteCatId + '/delete/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) { closeCatModal(); location.reload(); }
+      else { alert(data.error || 'Gagal menghapus kategori'); }
+    });
+  });
+})();
+</script>
+{% endblock %}

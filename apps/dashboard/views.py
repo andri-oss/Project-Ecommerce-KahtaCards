@@ -215,6 +215,86 @@ def product_delete_view(request, pk):
 
 
 @staff_member_required(login_url='/auth/login/')
+def categories_view(request):
+    """Category management — list + inline add."""
+    from django.utils.text import slugify
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '')
+        image = request.FILES.get('image')
+
+        if name:
+            slug = slugify(name)
+            base_slug = slug
+            counter = 1
+            while Category.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            cat = Category(name=name, slug=slug, description=description)
+            if image:
+                cat.image = image
+            cat.save()
+        return redirect('dashboard:categories')
+
+    categories = Category.objects.annotate(
+        product_count=Count('products')
+    ).order_by('-created_at')
+
+    return render(request, 'dashboard/categories.html', {
+        'categories': categories,
+    })
+
+
+@staff_member_required(login_url='/auth/login/')
+def category_edit_view(request, pk):
+    """Edit a category."""
+    from django.utils.text import slugify
+
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        category.name = request.POST.get('name', '').strip()
+        category.description = request.POST.get('description', '')
+        if request.FILES.get('image'):
+            category.image = request.FILES['image']
+
+        new_slug = slugify(category.name)
+        if new_slug != category.slug:
+            base_slug = new_slug
+            counter = 1
+            while Category.objects.filter(slug=new_slug).exclude(pk=pk).exists():
+                new_slug = f"{base_slug}-{counter}"
+                counter += 1
+            category.slug = new_slug
+
+        category.save()
+        return redirect('dashboard:categories')
+
+    return render(request, 'dashboard/category_form.html', {
+        'category': category,
+    })
+
+
+@staff_member_required(login_url='/auth/login/')
+def category_delete_view(request, pk):
+    """Delete a category (AJAX)."""
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        product_count = category.products.count()
+        if product_count > 0:
+            return JsonResponse({
+                'success': False,
+                'error': f'Kategori masih memiliki {product_count} produk. Hapus atau pindahkan produk terlebih dahulu.'
+            }, status=400)
+        category.delete()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+        return redirect('dashboard:categories')
+    return redirect('dashboard:categories')
+
+
+@staff_member_required(login_url='/auth/login/')
 def orders_view(request):
     """Order management list with filters."""
     status_filter = request.GET.get('status', '')
