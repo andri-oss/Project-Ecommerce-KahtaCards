@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cara Pesan — Kahta Grafika{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/how_to_order.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="how-main">
+  <div class="container">
+
+    <!-- ── Page Header ──────────────────────────────────── -->
+    <div class="page-header reveal">
+      <div class="section-label">Panduan Pemesanan</div>
+      <h1 class="page-title">Cara Pesan</h1>
+      <p class="page-subtitle">Proses pemesanan yang mudah dan transparan untuk kemasan impian Anda</p>
+    </div>
+
+    <!-- ── Steps ────────────────────────────────────────── -->
+    <div class="steps-list">
+
+      <!-- Step 01 — Pilih Produk -->
+      <div class="step-row reveal reveal-delay-1">
+        <div class="step-left">
+          <div class="step-num">01</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+          </div>
+          <div class="step-body">
+            <h3 class="step-title">Pilih Produk</h3>
+            <p class="step-desc">Telusuri katalog produk kami dan pilih jenis kemasan yang sesuai dengan kebutuhan bisnis Anda. Tersedia berbagai pilihan material, ukuran, dan finishing.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 02 — Upload Desain -->
+      <div class="step-row reveal reveal-delay-2">
+        <div class="step-left">
+          <div class="step-num">02</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div class="step-body">
+            <h3 class="step-title">Upload Desain</h3>
+            <p class="step-desc">Upload file desain Anda (AI, PDF, EPS) dengan resolusi minimal 300 DPI. Jika belum memiliki desain, tim kreatif kami siap membantu Anda.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 03 — Konfirmasi Pesanan -->
+      <div class="step-row reveal reveal-delay-3">
+        <div class="step-left">
+          <div class="step-num">03</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="9" y1="13" x2="15" y2="13"/>
+              <line x1="9" y1="17" x2="15" y2="17"/>
+            </svg>
+          </div>
+          <div class="step-body">
+            <h3 class="step-title">Konfirmasi Pesanan</h3>
+            <p class="step-desc">Tim kami akan memverifikasi file desain dan memberikan estimasi biaya produksi. Setelah pembayaran dikonfirmasi, produksi segera dimulai.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 04 — Terima Produk -->
+      <div class="step-row reveal reveal-delay-4">
+        <div class="step-left">
+          <div class="step-num">04</div>
+          <!-- No line after last step -->
+        </div>
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </div>
+          <div class="step-body">
+            <h3 class="step-title">Terima Produk</h3>
+            <p class="step-desc">Produk dikemas dengan aman menggunakan bubble wrap dan kardus khusus, kemudian dikirim ke seluruh Indonesia dengan jasa ekspedisi terpercaya.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── CTA Banner ───────────────────────────────────── -->
+    <div class="cta-banner reveal">
+      <h2 class="cta-title">Siap Memulai?</h2>
+      <p class="cta-sub">Jelajahi katalog produk kami dan temukan kemasan yang sempurna untuk bisnis Anda.</p>
+      <a href="{% url 'catalog:product_list' %}" class="btn-cta">Lihat Katalog →</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

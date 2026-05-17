@@ -35,3 +35,7 @@ def product_detail(request, slug):
     return render(request, 'catalog/product_detail.html', {
         'product': product
     })
+
+
+def how_to_order(request):
+    return render(request, 'catalog/how_to_order.html')
