@@ -74,6 +74,10 @@ class OrderItem(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=0)
     variant_info = models.CharField(max_length=255, blank=True)
 
+    # Design data (carried over from CartItem)
+    design_file = models.FileField(upload_to='order_designs/', blank=True, null=True)
+    design_note = models.TextField(blank=True)
+
     def __str__(self):
         return f"{self.product_name} x{self.quantity}"
 

@@ -34,6 +34,133 @@
       <p class="checkout-subtitle">Pilih metode pengiriman dan lengkapi rincian untuk pesanan Anda.</p>
     </div>
 
+    <!-- ── Design Review Section ──────────────────────────── -->
+    <div class="design-review-section reveal">
+      <div class="design-review-header">
+        <div class="design-review-title-row">
+          <div class="design-review-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="design-review-title">Detail Desain & Catatan</h3>
+            <p class="design-review-desc">Upload file desain dan tambahkan catatan untuk setiap produk sebelum melanjutkan.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-review-items">
+        {% for item in items %}
+        <div class="design-item" data-item-id="{{ item.id }}">
+          <div class="design-item-left">
+            <div class="design-item-img">
+              {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+              {% else %}
+                <div class="design-item-placeholder"></div>
+              {% endif %}
+            </div>
+            <div class="design-item-info">
+              <div class="design-item-name">{{ item.product.name }}</div>
+              <div class="design-item-qty">Qty: {{ item.quantity }} pcs</div>
+            </div>
+          </div>
+          <div class="design-item-right">
+            <div class="design-item-status" id="design-status-{{ item.id }}">
+              {% if item.design_file or item.design_note %}
+                <span class="design-badge design-badge-done">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Desain diunggah
+                </span>
+              {% else %}
+                <span class="design-badge design-badge-empty">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  Belum ada desain
+                </span>
+              {% endif %}
+            </div>
+            <button type="button" class="design-edit-btn" onclick="openDesignModal({{ item.id }}, '{{ item.product.name|escapejs }}', '{{ item.design_note|escapejs }}', '{% if item.design_file %}{{ item.design_file.name|cut:"cart_designs/" }}{% endif %}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              {% if item.design_file or item.design_note %}Ubah{% else %}Tambahkan{% endif %}
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ── Design Upload Modal ────────────────────────────── -->
+    <div class="design-modal-overlay" id="designModalOverlay">
+      <div class="design-modal">
+        <div class="design-modal-header">
+          <h3>Upload Desain & Catatan</h3>
+          <button type="button" class="design-modal-close" onclick="closeDesignModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="design-modal-product" id="modalProductName"></div>
+
+        <div class="design-modal-body">
+          <input type="hidden" id="modalItemId" value="">
+
+          <!-- Upload Zone -->
+          <label class="design-modal-label">FILE DESAIN</label>
+          <div class="design-upload-zone" id="modalUploadZone">
+            <div class="upload-zone-content" id="uploadZoneContent">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p class="upload-zone-text">Drag & drop atau klik untuk upload</p>
+              <p class="upload-zone-hint">Format: AI, PDF, PNG, JPG (Maks. 50MB)</p>
+            </div>
+            <div class="upload-zone-file" id="uploadZoneFile" style="display:none;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span id="uploadFileName"></span>
+              <button type="button" class="upload-remove-btn" onclick="removeUploadFile()" title="Hapus file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <input type="file" id="modalFileInput" accept=".ai,.pdf,.png,.jpg,.jpeg" style="display:none;">
+          </div>
+
+          <!-- Notes -->
+          <label class="design-modal-label">CATATAN UNTUK PERCETAKAN</label>
+          <textarea class="design-modal-textarea" id="modalDesignNote" rows="3" placeholder="Contoh: Warna cokelat pada logo jangan terlalu gelap, hasil matte premium..."></textarea>
+        </div>
+
+        <div class="design-modal-footer">
+          <button type="button" class="design-modal-cancel" onclick="closeDesignModal()">Batal</button>
+          <button type="button" class="design-modal-save" onclick="saveDesign()" id="modalSaveBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Simpan
+          </button>
+        </div>
+      </div>
+    </div>
+
     <form method="post" id="checkout-form" class="checkout-layout" novalidate>
       {% csrf_token %}
 
@@ -270,4 +397,176 @@
   window.CART_SUBTOTAL = {{ cart.total }};
 </script>
 <script src="{% static 'js/checkout.js' %}"></script>
+<script>
+(function() {
+  'use strict';
+
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
+  let pendingFile = null;
+  let removeFile = false;
+  let existingFileName = '';
+
+  /* ── Open Modal ───────────────────────────────────────── */
+  window.openDesignModal = function(itemId, productName, designNote, fileName) {
+    document.getElementById('modalItemId').value = itemId;
+    document.getElementById('modalProductName').textContent = productName;
+    document.getElementById('modalDesignNote').value = designNote || '';
+
+    pendingFile = null;
+    removeFile = false;
+    existingFileName = fileName || '';
+
+    const fileInput = document.getElementById('modalFileInput');
+    fileInput.value = '';
+
+    if (fileName) {
+      showFileState(fileName);
+    } else {
+      showEmptyState();
+    }
+
+    document.getElementById('designModalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  /* ── Close Modal ──────────────────────────────────────── */
+  window.closeDesignModal = function() {
+    document.getElementById('designModalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  /* ── Show empty upload state ──────────────────────────── */
+  function showEmptyState() {
+    document.getElementById('uploadZoneContent').style.display = '';
+    document.getElementById('uploadZoneFile').style.display = 'none';
+  }
+
+  /* ── Show file uploaded state ─────────────────────────── */
+  function showFileState(name) {
+    document.getElementById('uploadZoneContent').style.display = 'none';
+    document.getElementById('uploadZoneFile').style.display = 'flex';
+    document.getElementById('uploadFileName').textContent = name;
+  }
+
+  /* ── Remove file ──────────────────────────────────────── */
+  window.removeUploadFile = function() {
+    document.getElementById('modalFileInput').value = '';
+    pendingFile = null;
+    removeFile = true;
+    showEmptyState();
+  };
+
+  /* ── Upload zone interactions ─────────────────────────── */
+  const uploadZone = document.getElementById('modalUploadZone');
+  const fileInput  = document.getElementById('modalFileInput');
+
+  uploadZone.addEventListener('click', function(e) {
+    if (e.target.closest('.upload-remove-btn')) return;
+    fileInput.click();
+  });
+
+  uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('dragover');
+  });
+
+  uploadZone.addEventListener('dragleave', function() {
+    this.classList.remove('dragover');
+  });
+
+  uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      pendingFile = e.dataTransfer.files[0];
+      removeFile = false;
+      showFileState(pendingFile.name);
+    }
+  });
+
+  fileInput.addEventListener('change', function() {
+    if (this.files.length) {
+      pendingFile = this.files[0];
+      removeFile = false;
+      showFileState(pendingFile.name);
+    }
+  });
+
+  /* ── Close modal on overlay click ─────────────────────── */
+  document.getElementById('designModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeDesignModal();
+  });
+
+  /* ── Close on Escape ──────────────────────────────────── */
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDesignModal();
+  });
+
+  /* ── Save Design ──────────────────────────────────────── */
+  window.saveDesign = function() {
+    const itemId = document.getElementById('modalItemId').value;
+    const note   = document.getElementById('modalDesignNote').value.trim();
+    const saveBtn = document.getElementById('modalSaveBtn');
+
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-sm"></span> Menyimpan...';
+
+    const formData = new FormData();
+    formData.append('item_id', itemId);
+    formData.append('design_note', note);
+
+    if (pendingFile) {
+      formData.append('design_file', pendingFile);
+    }
+
+    if (removeFile) {
+      formData.append('remove_file', '1');
+    }
+
+    fetch('/cart/update-design/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken') },
+      body: formData,
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        // Update the status badge in the review section
+        const statusEl = document.getElementById('design-status-' + itemId);
+        const itemEl = document.querySelector('.design-item[data-item-id="' + itemId + '"]');
+        const editBtn = itemEl.querySelector('.design-edit-btn');
+
+        if (data.has_design) {
+          statusEl.innerHTML = '<span class="design-badge design-badge-done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Desain diunggah</span>';
+          editBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Ubah';
+
+          // Update the onclick with new data
+          const newNote = data.design_note.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const newFile = data.design_file_name.replace(/'/g, "\\'");
+          editBtn.setAttribute('onclick', `openDesignModal(${itemId}, '${itemEl.querySelector('.design-item-name').textContent.replace(/'/g, "\\'")}', '${newNote}', '${newFile}')`);
+        } else {
+          statusEl.innerHTML = '<span class="design-badge design-badge-empty"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Belum ada desain</span>';
+          editBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Tambahkan';
+          editBtn.setAttribute('onclick', `openDesignModal(${itemId}, '${itemEl.querySelector('.design-item-name').textContent.replace(/'/g, "\\'")}', '', '')`);
+        }
+
+        closeDesignModal();
+      }
+    })
+    .catch(() => {
+      alert('Gagal menyimpan desain. Silakan coba lagi.');
+    })
+    .finally(() => {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Simpan';
+    });
+  };
+
+})();
+</script>
 {% endblock %}
+

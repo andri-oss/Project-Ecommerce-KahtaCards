@@ -58,7 +58,7 @@ def checkout_shipping(request):
                 total=cart.total,
             )
 
-            # Copy cart items → order items (preserve design_note)
+            # Copy cart items → order items (preserve design data)
             for item in items:
                 OrderItem.objects.create(
                     order=order,
@@ -68,6 +68,8 @@ def checkout_shipping(request):
                     quantity=item.quantity,
                     price=item.product.price,
                     variant_info=item.design_note or '',
+                    design_file=item.design_file if item.design_file else None,
+                    design_note=item.design_note or '',
                 )
 
             return redirect('orders:checkout_payment', order_id=order.order_id)

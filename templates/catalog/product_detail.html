@@ -82,7 +82,7 @@
     </div>
 
     {# Notes #}
-    <textarea class="pd-notes" placeholder="Catatan untuk percetakan (opsional)" rows="2"></textarea>
+    <textarea class="pd-notes" id="designNote" placeholder="Catatan untuk percetakan (opsional)" rows="2"></textarea>
 
     {# Action Buttons #}
     <div class="pd-actions">
@@ -239,14 +239,28 @@
     cartBtn.addEventListener('click', function() {
       const productId = this.dataset.productId;
       const qty = parseInt(qtyInput?.value || '1');
+      const note = document.getElementById('designNote')?.value || '';
+      
+      const formData = new FormData();
+      formData.append('product_id', productId);
+      formData.append('quantity', qty);
+      formData.append('design_note', note);
+      
+      if (uploadInput && uploadInput.files.length > 0) {
+        formData.append('design_file', uploadInput.files[0]);
+      }
+
+      // Add loading state
+      const originalText = this.textContent;
+      this.textContent = 'Menambahkan...';
+      this.disabled = true;
 
       fetch('/cart/add/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'X-CSRFToken': getCookie('csrftoken'),
         },
-        body: JSON.stringify({ product_id: productId, quantity: qty }),
+        body: formData,
       })
       .then(r => {
         if (r.status === 403 || r.redirected) {
@@ -282,6 +296,10 @@
       })
       .catch(() => {
         alert('Gagal menambahkan ke keranjang');
+        this.textContent = 'Tambah ke Keranjang';
+      })
+      .finally(() => {
+        this.disabled = false;
       });
     });
   }
