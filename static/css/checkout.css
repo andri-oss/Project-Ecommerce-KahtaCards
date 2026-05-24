@@ -695,6 +695,16 @@
   color: var(--color-primary);
 }
 
+.success-address-row {
+  margin-bottom: 20px;
+}
+
+.success-address-value {
+  font-size: 14px;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
 .success-totals {
   background: var(--bg-cream);
   border-radius: var(--radius-sm);
@@ -781,3 +791,200 @@
     text-align: left;
   }
 }
+
+/* ============================================================
+   NEW ELEMENTS — Added for checkout improvements
+   ============================================================ */
+
+/* ── Form Section Header ─────────────────────────────────── */
+.form-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+.form-section-header {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ── Shipping Option Price Badge ─────────────────────────── */
+.shipping-option-price {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-top: 6px;
+}
+
+.shipping-option-price.free {
+  color: #2e7d32;
+}
+
+/* ── Pickup Info Card ────────────────────────────────────── */
+.pickup-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(200, 134, 42, 0.06);
+  border: 1.5px solid rgba(200, 134, 42, 0.25);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  animation: slideDown 0.3s ease;
+}
+
+.pickup-info-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(200, 134, 42, 0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pickup-info-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.pickup-info-address {
+  font-size: 13px;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.pickup-info-hours {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+/* ── Slide-Down Animation ────────────────────────────────── */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-section {
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.form-hidden {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.form-visible {
+  opacity: 1;
+  transform: translateY(0);
+  animation: slideDown 0.28s ease;
+}
+
+/* ── Form Error States ───────────────────────────────────── */
+.form-input.is-error,
+.form-select.is-error,
+.form-textarea.is-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.form-error-msg {
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.form-error-msg::before {
+  content: '⚠ ';
+  font-size: 11px;
+}
+
+/* ── Shipping Summary Card (on payment page) ─────────────── */
+.shipping-summary-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--bg-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+}
+
+.shipping-summary-icon {
+  width: 38px;
+  height: 38px;
+  background: var(--bg-cream);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.shipping-summary-info {
+  flex: 1;
+}
+
+.shipping-summary-method {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.shipping-summary-address {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.shipping-summary-edit {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border: 1px solid var(--color-accent);
+  border-radius: 20px;
+  transition: all var(--transition);
+}
+
+.shipping-summary-edit:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* ── Free Shipping Badge ─────────────────────────────────── */
+.badge-free {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.1);
+  border: 1px solid rgba(46, 125, 50, 0.25);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+/* ── Text utility ─────────────────────────────────────────── */
+.text-accent { color: var(--color-accent); }

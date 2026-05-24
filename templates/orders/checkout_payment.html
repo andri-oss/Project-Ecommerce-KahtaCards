@@ -11,11 +11,13 @@
 <div class="checkout-main">
   <div class="container">
 
-    <!-- Stepper -->
+    <!-- ── Stepper ─────────────────────────────────────── -->
     <div class="stepper reveal">
       <div class="stepper-step completed">
         <div class="stepper-circle completed">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
         <span class="stepper-label">PENGIRIMAN</span>
       </div>
@@ -32,7 +34,7 @@
     </div>
 
     <div class="checkout-header reveal">
-      <h1 class="checkout-title">Checkout - Pembayaran</h1>
+      <h1 class="checkout-title">Metode Pembayaran</h1>
       <p class="checkout-subtitle">Pilih metode pembayaran yang paling sesuai untuk pesanan Anda.</p>
     </div>
 
@@ -40,95 +42,208 @@
       {% csrf_token %}
 
       <div class="checkout-form reveal">
-        <!-- Timer -->
+
+        <!-- ── Countdown Timer ────────────────────────────── -->
         <div class="payment-timer">
           <div class="timer-left">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span>Selesaikan pembayaran dalam</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>Selesaikan pesanan dalam</span>
           </div>
           <div class="timer-countdown" id="countdown">23:59</div>
           <div class="timer-bar"><div class="timer-bar-fill" id="timer-bar"></div></div>
         </div>
 
-        <!-- Payment Methods -->
+        <!-- ── Shipping Summary ───────────────────────────── -->
+        <div class="shipping-summary-card">
+          <div class="shipping-summary-icon">
+            {% if order.shipping_method == 'delivery' %}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            {% else %}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            {% endif %}
+          </div>
+          <div class="shipping-summary-info">
+            <div class="shipping-summary-method">{{ order.get_shipping_method_display }}</div>
+            {% if order.shipping_method == 'delivery' %}
+            <div class="shipping-summary-address">
+              {{ order.recipient_name }} · {{ order.phone }}<br>
+              {{ order.address }}, {{ order.city }}, {{ order.province }} {{ order.postal_code }}
+            </div>
+            {% else %}
+            <div class="shipping-summary-address">
+              Penerima: {{ order.recipient_name }} · {{ order.phone }}<br>
+              Jl. Kemang Raya No. 123, Jakarta Selatan (Workshop Kahta Grafika)
+            </div>
+            {% endif %}
+          </div>
+          <a href="{% url 'orders:checkout_shipping' %}" class="shipping-summary-edit">Ubah</a>
+        </div>
+
+        <!-- ── Payment Methods ────────────────────────────── -->
         <div class="payment-section">
-          <h3 class="payment-section-title">Metode Pembayaran</h3>
+          <h3 class="payment-section-title">Pilih Metode Pembayaran</h3>
 
           <div class="payment-group-label">TRANSFER BANK (VIRTUAL ACCOUNT)</div>
           <div class="payment-grid">
-            <label class="payment-option"><input type="radio" name="payment_method" value="bca_va">
+            <label class="payment-option">
+              <input type="radio" name="payment_method" value="bca_va">
               <div class="payment-option-inner">
-                <div class="payment-icon payment-icon-bank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-                <div><div class="payment-option-name">BCA Virtual Account</div><div class="payment-option-desc">Verifikasi otomatis</div></div>
+                <div class="payment-icon payment-icon-bank">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="payment-option-name">BCA Virtual Account</div>
+                  <div class="payment-option-desc">Verifikasi otomatis</div>
+                </div>
               </div>
             </label>
-            <label class="payment-option"><input type="radio" name="payment_method" value="mandiri_bill">
+            <label class="payment-option">
+              <input type="radio" name="payment_method" value="mandiri_bill">
               <div class="payment-option-inner">
-                <div class="payment-icon payment-icon-bank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-                <div><div class="payment-option-name">Mandiri Bill</div><div class="payment-option-desc">Verifikasi otomatis</div></div>
+                <div class="payment-icon payment-icon-bank">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="payment-option-name">Mandiri Bill</div>
+                  <div class="payment-option-desc">Verifikasi otomatis</div>
+                </div>
               </div>
             </label>
           </div>
 
-          <label class="payment-option payment-option-wide selected"><input type="radio" name="payment_method" value="qris" checked>
+          <div class="payment-group-label">SCAN & PAY</div>
+          <label class="payment-option payment-option-wide selected">
+            <input type="radio" name="payment_method" value="qris" checked>
             <div class="payment-option-inner">
-              <div class="payment-icon payment-icon-qris"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="1"/></svg></div>
-              <div><div class="payment-option-name">QRIS</div><div class="payment-option-desc">Gopay, OVO, Dana, ShopeePay, & Bank</div></div>
-              <div class="payment-check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div class="payment-icon payment-icon-qris">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/>
+                  <rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="1"/>
+                </svg>
+              </div>
+              <div>
+                <div class="payment-option-name">QRIS</div>
+                <div class="payment-option-desc">GoPay, OVO, Dana, ShopeePay &amp; semua bank</div>
+              </div>
+              <div class="payment-check">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
             </div>
           </label>
 
           <div class="payment-group-label">DOMPET DIGITAL</div>
           <div class="payment-grid">
-            <label class="payment-option"><input type="radio" name="payment_method" value="gopay">
+            <label class="payment-option">
+              <input type="radio" name="payment_method" value="gopay">
               <div class="payment-option-inner">
-                <div class="payment-icon payment-icon-wallet"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg></div>
+                <div class="payment-icon payment-icon-wallet">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/>
+                  </svg>
+                </div>
                 <div class="payment-option-name">GoPay</div>
               </div>
             </label>
-            <label class="payment-option"><input type="radio" name="payment_method" value="ovo">
+            <label class="payment-option">
+              <input type="radio" name="payment_method" value="ovo">
               <div class="payment-option-inner">
-                <div class="payment-icon payment-icon-wallet"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg></div>
+                <div class="payment-icon payment-icon-wallet">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/>
+                  </svg>
+                </div>
                 <div class="payment-option-name">OVO</div>
               </div>
             </label>
           </div>
         </div>
+
       </div>
 
-      <!-- Summary Sidebar -->
+      <!-- ── Order Summary Sidebar ────────────────────────── -->
       <aside class="checkout-summary reveal reveal-delay-1">
         <h2 class="summary-title">Ringkasan Pesanan</h2>
+
         <div class="summary-items">
           {% for item in order_items %}
           <div class="summary-item">
             <div class="summary-item-img">
-              {% if item.product and item.product.image %}<img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">{% else %}<div class="summary-item-placeholder"></div>{% endif %}
+              {% if item.product and item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
+              {% else %}
+                <div class="summary-item-placeholder"></div>
+              {% endif %}
             </div>
             <div class="summary-item-info">
               <div class="summary-item-name">{{ item.product_name }}</div>
-              <div class="summary-item-meta">Qty: {{ item.quantity }}{% if item.variant_info %} • {{ item.variant_info }}{% endif %}</div>
+              <div class="summary-item-meta">Qty: {{ item.quantity }}{% if item.variant_info %} · {{ item.variant_info }}{% endif %}</div>
               <div class="summary-item-price">Rp {{ item.subtotal|floatformat:"0" }}</div>
             </div>
           </div>
           {% endfor %}
         </div>
+
         <div class="summary-divider"></div>
-        <div class="summary-row"><span>Subtotal</span><span>Rp {{ order.subtotal|floatformat:"0" }}</span></div>
-        <div class="summary-row"><span>Pengiriman</span><span>{% if order.shipping_method == 'delivery' %}Rp 125.000{% else %}Gratis{% endif %}</span></div>
-        <div class="summary-row"><span>Pajak (11%)</span><span>Rp {% widthratio order.subtotal 100 11 %}</span></div>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>Rp {{ order.subtotal|floatformat:"0" }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Ongkos Kirim</span>
+          <span>
+            {% if shipping_fee == 0 %}
+              <span class="badge-free">GRATIS</span>
+            {% else %}
+              Rp {{ shipping_fee }}
+            {% endif %}
+          </span>
+        </div>
+        <div class="summary-row">
+          <span>Pajak (11%)</span>
+          <span>Rp {{ tax }}</span>
+        </div>
+
         <div class="summary-divider"></div>
-        <div class="summary-row summary-total"><span>Total Tagihan</span><span>Rp {{ order.subtotal|floatformat:"0" }}</span></div>
+
+        <div class="summary-row summary-total">
+          <span>Total Tagihan</span>
+          <span>Rp {{ total }}</span>
+        </div>
+
         <button type="submit" class="btn-checkout">Bayar Sekarang →</button>
+
         <div class="summary-secure">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
           VERIFIED SECURE TRANSACTION
         </div>
-        <div class="summary-help">Butuh bantuan? Hubungi kami via WhatsApp di <strong>+62 812 3456 7890</strong></div>
+
+        <div class="summary-help">
+          Butuh bantuan? Hubungi kami via WhatsApp di <strong>+62 812 3456 7890</strong>
+        </div>
       </aside>
+
     </form>
   </div>
 </div>
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'js/checkout.js' %}"></script>{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/checkout.js' %}"></script>
+{% endblock %}

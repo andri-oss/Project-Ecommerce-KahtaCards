@@ -30,18 +30,21 @@
     </div>
 
     <div class="checkout-header reveal">
-      <h1 class="checkout-title">Checkout - Pengiriman</h1>
-      <p class="checkout-subtitle">Lengkapi rincian pengiriman untuk pesanan eksklusif Anda.</p>
+      <h1 class="checkout-title">Informasi Pengiriman</h1>
+      <p class="checkout-subtitle">Pilih metode pengiriman dan lengkapi rincian untuk pesanan Anda.</p>
     </div>
 
-    <form method="post" class="checkout-layout">
+    <form method="post" id="checkout-form" class="checkout-layout" novalidate>
       {% csrf_token %}
 
       <div class="checkout-form reveal">
-        <!-- ── Shipping Method ────────────────────────────── -->
+
+        <!-- ── Shipping Method ──────────────────────────── -->
+        <div class="form-section-title">Metode Pengiriman</div>
         <div class="shipping-methods">
-          <label class="shipping-option selected" id="opt-delivery">
-            <input type="radio" name="shipping_method" value="delivery" checked>
+          <label class="shipping-option {% if post.shipping_method != 'pickup' %}selected{% endif %}" id="opt-delivery">
+            <input type="radio" name="shipping_method" value="delivery"
+              {% if post.shipping_method != 'pickup' %}checked{% endif %}>
             <div class="shipping-option-inner">
               <div class="shipping-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -51,14 +54,16 @@
               </div>
               <div>
                 <div class="shipping-option-title">Kirim ke Alamat</div>
-                <div class="shipping-option-desc">Layanan kurir reguler & ekspres ke pintu Anda.</div>
+                <div class="shipping-option-desc">Layanan kurir reguler ke pintu Anda.</div>
+                <div class="shipping-option-price">Rp 25.000</div>
               </div>
               <div class="shipping-radio"></div>
             </div>
           </label>
 
-          <label class="shipping-option" id="opt-pickup">
-            <input type="radio" name="shipping_method" value="pickup">
+          <label class="shipping-option {% if post.shipping_method == 'pickup' %}selected{% endif %}" id="opt-pickup">
+            <input type="radio" name="shipping_method" value="pickup"
+              {% if post.shipping_method == 'pickup' %}checked{% endif %}>
             <div class="shipping-option-inner">
               <div class="shipping-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -67,76 +72,135 @@
               </div>
               <div>
                 <div class="shipping-option-title">Ambil di Toko</div>
-                <div class="shipping-option-desc">Gratis pengambilan di workshop utama kami.</div>
+                <div class="shipping-option-desc">Gratis — ambil langsung di workshop kami.</div>
+                <div class="shipping-option-price free">Gratis</div>
               </div>
               <div class="shipping-radio"></div>
             </div>
           </label>
         </div>
 
-        <!-- ── Address Form ───────────────────────────────── -->
-        <div class="form-section" id="address-form">
+        <!-- ── Pickup Info Card (muncul saat pickup dipilih) ── -->
+        <div class="pickup-info-card" id="pickup-info"
+          style="display: {% if post.shipping_method == 'pickup' %}flex{% else %}none{% endif %}">
+          <div class="pickup-info-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div>
+            <div class="pickup-info-title">Lokasi Pengambilan</div>
+            <div class="pickup-info-address">Jl. Kemang Raya No. 123, Jakarta Selatan, DKI Jakarta 12730</div>
+            <div class="pickup-info-hours">Senin – Sabtu, 09.00 – 17.00 WIB</div>
+          </div>
+        </div>
+
+        <!-- ── Contact Info (selalu tampil) ─────────────────── -->
+        <div class="form-section" id="contact-form">
+          <div class="form-section-header">Informasi Kontak</div>
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label">NAMA PENERIMA</label>
-              <input type="text" name="recipient_name" class="form-input" placeholder="John Doe" required>
+              <label class="form-label" for="id_recipient_name">NAMA PENERIMA</label>
+              <input type="text" id="id_recipient_name" name="recipient_name" class="form-input {% if errors.recipient_name %}is-error{% endif %}"
+                placeholder="Nama lengkap" value="{{ post.recipient_name|default:prefill.recipient_name }}" required>
+              {% if errors.recipient_name %}
+                <div class="form-error-msg">{{ errors.recipient_name }}</div>
+              {% endif %}
             </div>
             <div class="form-group">
-              <label class="form-label">NO. TELEPON</label>
-              <input type="tel" name="phone" class="form-input" placeholder="+62 812 3456 789" required>
+              <label class="form-label" for="id_phone">NO. TELEPON</label>
+              <input type="tel" id="id_phone" name="phone" class="form-input {% if errors.phone %}is-error{% endif %}"
+                placeholder="+62 812 3456 789" value="{{ post.phone|default:prefill.phone }}" required>
+              {% if errors.phone %}
+                <div class="form-error-msg">{{ errors.phone }}</div>
+              {% endif %}
             </div>
           </div>
+        </div>
+
+        <!-- ── Address Form (hanya tampil saat delivery) ─────── -->
+        <div class="form-section" id="address-form"
+          style="display: {% if post.shipping_method == 'pickup' %}none{% else %}block{% endif %}">
+          <div class="form-section-header">Alamat Pengiriman</div>
 
           <div class="form-grid-3">
             <div class="form-group">
-              <label class="form-label">PROVINSI</label>
-              <select name="province" class="form-select" required>
+              <label class="form-label" for="id_province">PROVINSI</label>
+              <select id="id_province" name="province" class="form-select {% if errors.province %}is-error{% endif %}">
                 <option value="">Pilih Provinsi</option>
-                <option value="DKI Jakarta">DKI Jakarta</option>
-                <option value="Jawa Barat">Jawa Barat</option>
-                <option value="Jawa Tengah">Jawa Tengah</option>
-                <option value="Jawa Timur">Jawa Timur</option>
-                <option value="Banten">Banten</option>
-                <option value="DI Yogyakarta">DI Yogyakarta</option>
-                <option value="Bali">Bali</option>
-                <option value="Sumatera Utara">Sumatera Utara</option>
-                <option value="Sumatera Barat">Sumatera Barat</option>
-                <option value="Sulawesi Selatan">Sulawesi Selatan</option>
-                <option value="Kalimantan Timur">Kalimantan Timur</option>
+                {% with selected_province=post.province|default:'' %}
+                <option value="DKI Jakarta" {% if selected_province == 'DKI Jakarta' %}selected{% endif %}>DKI Jakarta</option>
+                <option value="Jawa Barat" {% if selected_province == 'Jawa Barat' %}selected{% endif %}>Jawa Barat</option>
+                <option value="Jawa Tengah" {% if selected_province == 'Jawa Tengah' %}selected{% endif %}>Jawa Tengah</option>
+                <option value="Jawa Timur" {% if selected_province == 'Jawa Timur' %}selected{% endif %}>Jawa Timur</option>
+                <option value="Banten" {% if selected_province == 'Banten' %}selected{% endif %}>Banten</option>
+                <option value="DI Yogyakarta" {% if selected_province == 'DI Yogyakarta' %}selected{% endif %}>DI Yogyakarta</option>
+                <option value="Bali" {% if selected_province == 'Bali' %}selected{% endif %}>Bali</option>
+                <option value="Sumatera Utara" {% if selected_province == 'Sumatera Utara' %}selected{% endif %}>Sumatera Utara</option>
+                <option value="Sumatera Barat" {% if selected_province == 'Sumatera Barat' %}selected{% endif %}>Sumatera Barat</option>
+                <option value="Sulawesi Selatan" {% if selected_province == 'Sulawesi Selatan' %}selected{% endif %}>Sulawesi Selatan</option>
+                <option value="Kalimantan Timur" {% if selected_province == 'Kalimantan Timur' %}selected{% endif %}>Kalimantan Timur</option>
+                {% endwith %}
               </select>
+              {% if errors.province %}
+                <div class="form-error-msg">{{ errors.province }}</div>
+              {% endif %}
             </div>
             <div class="form-group">
-              <label class="form-label">KOTA</label>
-              <select name="city" class="form-select" required>
+              <label class="form-label" for="id_city">KOTA</label>
+              <select id="id_city" name="city" class="form-select {% if errors.city %}is-error{% endif %}">
                 <option value="">Pilih Kota</option>
-                <option value="Jakarta Selatan">Jakarta Selatan</option>
-                <option value="Jakarta Pusat">Jakarta Pusat</option>
-                <option value="Jakarta Barat">Jakarta Barat</option>
-                <option value="Jakarta Timur">Jakarta Timur</option>
-                <option value="Jakarta Utara">Jakarta Utara</option>
-                <option value="Bandung">Bandung</option>
-                <option value="Surabaya">Surabaya</option>
-                <option value="Semarang">Semarang</option>
-                <option value="Yogyakarta">Yogyakarta</option>
+                {% with selected_city=post.city|default:'' %}
+                <option value="Jakarta Selatan" {% if selected_city == 'Jakarta Selatan' %}selected{% endif %}>Jakarta Selatan</option>
+                <option value="Jakarta Pusat" {% if selected_city == 'Jakarta Pusat' %}selected{% endif %}>Jakarta Pusat</option>
+                <option value="Jakarta Barat" {% if selected_city == 'Jakarta Barat' %}selected{% endif %}>Jakarta Barat</option>
+                <option value="Jakarta Timur" {% if selected_city == 'Jakarta Timur' %}selected{% endif %}>Jakarta Timur</option>
+                <option value="Jakarta Utara" {% if selected_city == 'Jakarta Utara' %}selected{% endif %}>Jakarta Utara</option>
+                <option value="Bandung" {% if selected_city == 'Bandung' %}selected{% endif %}>Bandung</option>
+                <option value="Surabaya" {% if selected_city == 'Surabaya' %}selected{% endif %}>Surabaya</option>
+                <option value="Semarang" {% if selected_city == 'Semarang' %}selected{% endif %}>Semarang</option>
+                <option value="Yogyakarta" {% if selected_city == 'Yogyakarta' %}selected{% endif %}>Yogyakarta</option>
+                <option value="Tangerang" {% if selected_city == 'Tangerang' %}selected{% endif %}>Tangerang</option>
+                <option value="Bekasi" {% if selected_city == 'Bekasi' %}selected{% endif %}>Bekasi</option>
+                <option value="Depok" {% if selected_city == 'Depok' %}selected{% endif %}>Depok</option>
+                <option value="Bogor" {% if selected_city == 'Bogor' %}selected{% endif %}>Bogor</option>
+                <option value="Medan" {% if selected_city == 'Medan' %}selected{% endif %}>Medan</option>
+                <option value="Makassar" {% if selected_city == 'Makassar' %}selected{% endif %}>Makassar</option>
+                <option value="Balikpapan" {% if selected_city == 'Balikpapan' %}selected{% endif %}>Balikpapan</option>
+                {% endwith %}
               </select>
+              {% if errors.city %}
+                <div class="form-error-msg">{{ errors.city }}</div>
+              {% endif %}
             </div>
             <div class="form-group">
-              <label class="form-label">KODE POS</label>
-              <input type="text" name="postal_code" class="form-input" placeholder="12345" required>
+              <label class="form-label" for="id_postal_code">KODE POS</label>
+              <input type="text" id="id_postal_code" name="postal_code"
+                class="form-input {% if errors.postal_code %}is-error{% endif %}"
+                placeholder="12345" value="{{ post.postal_code|default:'' }}" maxlength="5">
+              {% if errors.postal_code %}
+                <div class="form-error-msg">{{ errors.postal_code }}</div>
+              {% endif %}
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">ALAMAT LENGKAP</label>
-            <textarea name="address" class="form-textarea" rows="3" placeholder="Jl. Kemang Raya No. 123, Blok A..." required></textarea>
+            <label class="form-label" for="id_address">ALAMAT LENGKAP</label>
+            <textarea id="id_address" name="address" class="form-textarea {% if errors.address %}is-error{% endif %}"
+              rows="3" placeholder="Jl. Kemang Raya No. 123, Blok A, RT 01/RW 02...">{{ post.address|default:'' }}</textarea>
+            {% if errors.address %}
+              <div class="form-error-msg">{{ errors.address }}</div>
+            {% endif %}
           </div>
 
           <label class="form-checkbox">
-            <input type="checkbox" name="save_address">
+            <input type="checkbox" name="save_address" {% if post.save_address %}checked{% endif %}>
             <span class="checkmark"></span>
             Simpan alamat ini untuk pesanan berikutnya
           </label>
         </div>
+
       </div>
 
       <!-- ── Order Summary Sidebar ────────────────────────── -->
@@ -169,31 +233,41 @@
           <span>Rp {{ cart.total|floatformat:"0" }}</span>
         </div>
         <div class="summary-row">
-          <span>Pengiriman</span>
-          <span class="text-accent">Pilih di langkah ini</span>
+          <span>Ongkos Kirim</span>
+          <span id="shipping-fee-display" class="text-accent">Pilih metode</span>
+        </div>
+        <div class="summary-row">
+          <span>Pajak (11%)</span>
+          <span>Rp {% widthratio cart.total 100 11 %}</span>
         </div>
 
         <div class="summary-divider"></div>
 
         <div class="summary-row summary-total">
-          <span>Total</span>
-          <span>Rp {{ cart.total|floatformat:"0" }}</span>
+          <span>Estimasi Total</span>
+          <span id="total-display">—</span>
         </div>
 
         <button type="submit" class="btn-checkout">Lanjut ke Pembayaran →</button>
 
         <div class="summary-secure">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
           TRANSAKSI TERENKRIPSI & AMAN
         </div>
       </aside>
 
     </form>
-
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script>
+  // Pass cart total to JS for dynamic calculation
+  window.CART_SUBTOTAL = {{ cart.total }};
+</script>
 <script src="{% static 'js/checkout.js' %}"></script>
 {% endblock %}
