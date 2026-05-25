@@ -73,6 +73,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'apps.cart.context_processors.cart_context',
             ],
+            'builtins': [
+                'apps.catalog.templatetags.currency_tags',
+            ],
         },
     },
 ]

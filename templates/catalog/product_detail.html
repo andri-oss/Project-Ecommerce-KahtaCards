@@ -47,7 +47,7 @@
   <div class="pd-info">
     <p class="pd-category-label">{{ product.category.name|upper }}</p>
     <h1 class="pd-name">{{ product.name }}</h1>
-    <p class="pd-price">Rp {{ product.price|floatformat:"0" }}<span>/pcs</span></p>
+    <p class="pd-price">{{ product.price|rupiah }}<span>/pcs</span></p>
 
     {# Size Selector #}
     <span class="pd-field-label">Pilih Ukuran</span>
@@ -150,7 +150,7 @@
         {% endif %}
       </div>
       <span class="pd-related-name">{{ rp.name }}</span>
-      <span class="pd-related-price">Rp {{ rp.price|floatformat:"0" }}</span>
+      <span class="pd-related-price">{{ rp.price|rupiah }}</span>
     </a>
     {% endfor %}
   </div>

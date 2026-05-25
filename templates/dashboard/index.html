@@ -31,7 +31,7 @@
       <span class="adm-stat-badge">+8.4%</span>
     </div>
     <div class="adm-stat-label">Total Pendapatan</div>
-    <div class="adm-stat-value">Rp {{ revenue_month|floatformat:"0" }}</div>
+    <div class="adm-stat-value">{{ revenue_month|rupiah }}</div>
   </div>
 
   <div class="adm-stat-card">
@@ -144,7 +144,7 @@
             {{ order.user.get_full_name|default:order.user.username }}
           </div>
         </td>
-        <td>Rp {{ order.total|floatformat:"0" }}</td>
+        <td>{{ order.total|rupiah }}</td>
         <td>
           <span class="adm-badge adm-badge-{{ order.status }}">{{ order.get_status_display }}</span>
         </td>

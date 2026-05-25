@@ -74,7 +74,7 @@
               {% if item.variant_info %} · {{ item.variant_info }}{% endif %}
             </div>
           </div>
-          <div class="success-item-price">Rp {{ item.subtotal|floatformat:"0" }}</div>
+          <div class="success-item-price">{{ item.subtotal|rupiah }}</div>
         </div>
         {% endfor %}
       </div>
@@ -117,7 +117,7 @@
       <div class="success-totals">
         <div class="summary-row">
           <span>Subtotal</span>
-          <span>Rp {{ order.subtotal|floatformat:"0" }}</span>
+          <span>{{ order.subtotal|rupiah }}</span>
         </div>
         <div class="summary-row">
           <span>Ongkos Kirim</span>
@@ -125,18 +125,18 @@
             {% if order.shipping_fee == 0 %}
               <span class="badge-free">GRATIS</span>
             {% else %}
-              Rp {{ order.shipping_fee|floatformat:"0" }}
+              {{ order.shipping_fee|rupiah }}
             {% endif %}
           </span>
         </div>
         <div class="summary-row">
           <span>Pajak (11%)</span>
-          <span>Rp {{ order.tax|floatformat:"0" }}</span>
+          <span>{{ order.tax|rupiah }}</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-row summary-total">
           <span>Total Pembayaran</span>
-          <span>Rp {{ order.total|floatformat:"0" }}</span>
+          <span>{{ order.total|rupiah }}</span>
         </div>
       </div>
 

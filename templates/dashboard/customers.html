@@ -43,7 +43,7 @@
         <td>{{ customer.email|default:"—" }}</td>
         <td>{{ customer.phone_number|default:"—" }}</td>
         <td><strong>{{ customer.order_count }}</strong></td>
-        <td>{% if customer.total_spent %}Rp {{ customer.total_spent|floatformat:"0" }}{% else %}Rp 0{% endif %}</td>
+        <td>{{ customer.total_spent|rupiah }}</td>
         <td>{{ customer.date_joined|date:"d M Y" }}</td>
       </tr>
       {% empty %}

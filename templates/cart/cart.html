@@ -57,7 +57,7 @@
               </div>
               <div class="cart-item-price">
                 <span class="price-label">SUBTOTAL</span>
-                <span class="price-value" id="subtotal-{{ item.id }}">Rp {{ item.subtotal|floatformat:"0" }}</span>
+                <span class="price-value" id="subtotal-{{ item.id }}">{{ item.subtotal|rupiah }}</span>
               </div>
             </div>
           </div>
@@ -71,7 +71,7 @@
 
         <div class="summary-row">
           <span>Subtotal</span>
-          <span id="cart-subtotal">Rp {{ cart.total|floatformat:"0" }}</span>
+          <span id="cart-subtotal">{{ cart.total|rupiah }}</span>
         </div>
         <div class="summary-row">
           <span>Ongkos Kirim</span>
@@ -82,7 +82,7 @@
 
         <div class="summary-row summary-total">
           <span>Total</span>
-          <span id="cart-total">Rp {{ cart.total|floatformat:"0" }}</span>
+          <span id="cart-total">{{ cart.total|rupiah }}</span>
         </div>
 
         <a href="{% url 'orders:checkout_shipping' %}" class="btn-checkout">Lanjut ke Checkout</a>

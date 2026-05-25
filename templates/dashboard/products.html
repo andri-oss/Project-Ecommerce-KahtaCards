@@ -53,7 +53,7 @@
           </div>
         </td>
         <td><span class="adm-badge adm-badge-active">{{ product.category.name }}</span></td>
-        <td><strong>Rp {{ product.price|floatformat:"0" }}</strong></td>
+        <td><strong>{{ product.price|rupiah }}</strong></td>
         <td>{{ product.min_order }} pcs</td>
         <td>
           <div class="adm-toggle">

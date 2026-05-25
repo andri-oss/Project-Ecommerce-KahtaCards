@@ -347,7 +347,7 @@
             <div class="summary-item-info">
               <div class="summary-item-name">{{ item.product.name }}</div>
               <div class="summary-item-meta">Qty: {{ item.quantity }}</div>
-              <div class="summary-item-price">Rp {{ item.subtotal|floatformat:"0" }}</div>
+             <div class="summary-item-price">{{ item.subtotal|rupiah }}</div>
             </div>
           </div>
           {% endfor %}
@@ -357,7 +357,7 @@
 
         <div class="summary-row">
           <span>Subtotal</span>
-          <span>Rp {{ cart.total|floatformat:"0" }}</span>
+          <span>{{ cart.total|rupiah }}</span>
         </div>
         <div class="summary-row">
           <span>Ongkos Kirim</span>
@@ -365,7 +365,8 @@
         </div>
         <div class="summary-row">
           <span>Pajak (11%)</span>
-          <span>Rp {% widthratio cart.total 100 11 %}</span>
+          {% widthratio cart.total 100 11 as tax_calculated %}
+          <span>{{ tax_calculated|rupiah }}</span>
         </div>
 
         <div class="summary-divider"></div>

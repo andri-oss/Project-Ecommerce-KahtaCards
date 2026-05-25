@@ -54,7 +54,7 @@
           </div>
         </td>
         <td>{{ order.created_at|date:"d M Y" }}</td>
-        <td><strong>Rp {{ order.total|floatformat:"0" }}</strong></td>
+        <td><strong>{{ order.total|rupiah }}</strong></td>
         <td>
           <span class="adm-badge adm-badge-{{ order.status }}">{{ order.get_status_display }}</span>
         </td>
