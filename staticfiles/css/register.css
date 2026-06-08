@@ -1,0 +1,352 @@
+/* ============================================================
+   register.css — Kahta Grafika Register Page
+   Place in: static/css/register.css
+   Extends: login.css (must be loaded first)
+   ============================================================ */
+
+/* ── Card width override ── */
+.register-card {
+  max-width: 500px;
+}
+
+/* ── Input icon ── */
+.input-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--color-text-light);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: color var(--transition-fast);
+  z-index: 1;
+}
+
+/* Icon sits at the top for textarea */
+.input-icon--top {
+  align-items: flex-start;
+  top: 15px;
+}
+
+.field-input.has-icon {
+  padding-left: 44px;
+  padding-right: 44px;
+}
+
+.field-group:focus-within .input-icon {
+  color: var(--color-accent);
+}
+
+/* ── Textarea ── */
+.textarea-wrapper {
+  align-items: flex-start;
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.6;
+  padding-top: 13px;
+  padding-bottom: 13px;
+  font-family: var(--font-body);
+}
+
+.field-textarea:focus {
+  border-color: var(--color-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(192, 139, 58, 0.12);
+}
+
+/* ── Input status icon (✓ / ✕) ── */
+.input-status {
+  position: absolute;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity var(--transition-mid);
+}
+
+.input-status.valid   { opacity: 1; color: #27ae60; }
+.input-status.invalid { opacity: 1; color: var(--color-error); }
+
+/* ── Field hint text ── */
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  font-weight: 300;
+}
+
+/* ── Progress steps ── */
+.progress-steps {
+  display: flex;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-input-bg);
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background var(--transition-mid), border-color var(--transition-mid), box-shadow var(--transition-mid);
+}
+
+.step-num {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+  transition: opacity var(--transition-fast);
+}
+
+.step-check {
+  position: absolute;
+  opacity: 0;
+  color: #fff;
+  transition: opacity var(--transition-fast);
+}
+
+.step-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  transition: color var(--transition-mid);
+}
+
+/* Active step */
+.step.active .step-dot {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px rgba(192, 139, 58, 0.15);
+}
+.step.active .step-num  { color: #fff; }
+.step.active .step-label { color: var(--color-accent); }
+
+/* Completed step */
+.step.done .step-dot {
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+}
+.step.done .step-num   { opacity: 0; }
+.step.done .step-check { opacity: 1; }
+.step.done .step-label { color: var(--color-accent-dark); }
+
+/* Connector line */
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--color-border);
+  margin: 0 10px 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.step-line::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  width: 0%;
+  background: var(--color-accent);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-line.filled::after { width: 100%; }
+
+/* ── Multi-step panels ── */
+.form-step {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeUp 0.35s ease both;
+}
+
+.form-step.active { display: flex; }
+
+/* ── Password strength bar ── */
+.strength-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-mid);
+}
+.strength-bar.visible { opacity: 1; }
+
+.strength-track {
+  flex: 1;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.strength-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+}
+
+.strength-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  min-width: 52px;
+  text-align: right;
+  color: var(--color-text-light);
+  transition: color var(--transition-fast);
+}
+
+.strength-fill.weak   { width: 25%;  background: #e74c3c; }
+.strength-fill.fair   { width: 50%;  background: #e67e22; }
+.strength-fill.good   { width: 75%;  background: #f1c40f; }
+.strength-fill.strong { width: 100%; background: #27ae60; }
+
+.strength-label.weak   { color: #e74c3c; }
+.strength-label.fair   { color: #e67e22; }
+.strength-label.good   { color: #d4ac0d; }
+.strength-label.strong { color: #27ae60; }
+
+/* ── Password rules checklist ── */
+.password-rules {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--color-text-light);
+  transition: color var(--transition-fast);
+}
+
+.rule-icon { flex-shrink: 0; }
+
+.rule.pass { color: #27ae60; }
+.rule.pass .rule-icon { color: #27ae60; }
+
+/* Circle → checkmark swap when rule passes */
+.rule.pass .rule-icon circle { display: none; }
+.rule.pass .rule-icon::after {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #27ae60;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ── Password match hint ── */
+.match-hint {
+  font-size: 0.78rem;
+  display: block;
+  min-height: 1.2em;
+  transition: color var(--transition-fast);
+}
+.match-hint.match    { color: #27ae60; }
+.match-hint.no-match { color: var(--color-error); }
+
+/* ── Terms row ── */
+.terms-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+.terms-label .checkbox-custom { margin-top: 1px; flex-shrink: 0; }
+
+.terms-text {
+  font-size: 0.82rem;
+  color: var(--color-text-mid);
+  line-height: 1.5;
+}
+
+.terms-link {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+.terms-link:hover { color: var(--color-accent-dark); }
+
+/* ── Step 2 action row ── */
+.step2-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 20px;
+  background: transparent;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--color-text-mid);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+.btn-back:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(192, 139, 58, 0.04);
+}
+
+.btn-submit { flex: 1; }
+
+/* Arrow nudge on hover */
+.btn-arrow { flex-shrink: 0; transition: transform var(--transition-fast); }
+.btn-masuk:hover .btn-arrow { transform: translateX(4px); }
+
+/* ── Shake animation for validation errors ── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .register-card  { max-width: 100%; }
+  .step2-actions  { flex-direction: column-reverse; }
+  .btn-back,
+  .btn-submit     { width: 100%; justify-content: center; }
+}

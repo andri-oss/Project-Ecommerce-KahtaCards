@@ -32,6 +32,8 @@ ALLOWED_HOSTS = ["*"]  # nanti production diganti domain
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -141,3 +143,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 AUTH_USER_MODEL = 'accounts.User'
 
 LOGIN_URL = '/auth/login/'
+
+CSRF_TRUSTED_ORIGINS = ['https://kahta-grafika.afeme.web.id']
+
+# Tell Django that if the 'X-Forwarded-Proto' header is 'https', the connection is secure
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
