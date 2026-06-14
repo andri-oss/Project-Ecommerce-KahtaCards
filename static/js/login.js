@@ -8,21 +8,26 @@
 
   /* ── Password toggle ── */
   function initPasswordToggle() {
-    const toggle   = document.getElementById('togglePassword');
-    const input    = document.getElementById('id_password');
-    const eyeOpen  = toggle?.querySelector('.eye-open');
-    const eyeClosed = toggle?.querySelector('.eye-closed');
+    const toggles = document.querySelectorAll('.toggle-password');
 
-    if (!toggle || !input) return;
+    toggles.forEach(function (toggle) {
+      const targetId = toggle.getAttribute('data-target') || 'id_password';
+      const input = document.getElementById(targetId);
+      const eyeOpen = toggle.querySelector('.eye-open');
+      const eyeClosed = toggle.querySelector('.eye-closed');
 
-    toggle.addEventListener('click', function () {
-      const isPassword = input.type === 'password';
+      if (!input) return;
 
-      input.type = isPassword ? 'text' : 'password';
-      eyeOpen.style.display  = isPassword ? 'none'  : '';
-      eyeClosed.style.display = isPassword ? '' : 'none';
+      toggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        const isPassword = input.type === 'password';
 
-      toggle.setAttribute('aria-label', isPassword ? 'Sembunyikan password' : 'Tampilkan password');
+        input.type = isPassword ? 'text' : 'password';
+        if (eyeOpen) eyeOpen.style.display = isPassword ? 'none' : '';
+        if (eyeClosed) eyeClosed.style.display = isPassword ? '' : 'none';
+
+        toggle.setAttribute('aria-label', isPassword ? 'Sembunyikan password' : 'Tampilkan password');
+      });
     });
   }
 
