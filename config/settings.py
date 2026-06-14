@@ -148,3 +148,12 @@ CSRF_TRUSTED_ORIGINS = ['https://kahta-grafika.afeme.web.id']
 
 # Tell Django that if the 'X-Forwarded-Proto' header is 'https', the connection is secure
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('SMTP_HOST', '127.0.0.1')
+EMAIL_PORT = int(os.getenv('SMTP_PORT', 25))
+EMAIL_HOST_USER = os.getenv('SMTP_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('SMTP_PASS', '')
+EMAIL_USE_TLS = os.getenv('SMTP_SECURE', 'false').lower() == 'true'
+DEFAULT_FROM_EMAIL = os.getenv('MAIL_FROM', 'automail@afeme.web.id')
