@@ -156,4 +156,4 @@ EMAIL_PORT = int(os.getenv('SMTP_PORT', 25))
 EMAIL_HOST_USER = os.getenv('SMTP_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('SMTP_PASS', '')
 EMAIL_USE_TLS = os.getenv('SMTP_SECURE', 'false').lower() == 'true'
-DEFAULT_FROM_EMAIL = os.getenv('MAIL_FROM', 'automail@afeme.web.id')
+DEFAULT_FROM_EMAIL = os.getenv('MAIL_FROM', 'Kahta-Grafika <no-reply@afeme.web.id>')

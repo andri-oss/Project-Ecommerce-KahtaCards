@@ -1,0 +1,11 @@
+Halo {{ user.username }},
+
+Terima kasih telah mendaftar di Kahta Grafika.
+Silakan klik tautan di bawah ini untuk mengaktifkan akun Anda:
+
+{{ protocol }}://{{ domain }}{% url 'accounts:activate' uidb64=uid token=token %}
+
+Jika Anda tidak mendaftar di Kahta Grafika, abaikan saja email ini.
+
+Salam hangat,
+Tim Kahta Grafika
