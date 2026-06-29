@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_tags %}
+
+{% block title %}Detail Pesanan #{{ order.order_id }} — Kahta Grafika{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/orders.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="orders-container">
+    <div class="orders-header reveal">
+        <h1 class="orders-title">Detail Pesanan</h1>
+        <a href="{% url 'orders:order_history' %}" class="btn-detail">Kembali ke Riwayat</a>
+    </div>
+
+    <div class="detail-grid reveal reveal-delay-1">
+        <div class="detail-main">
+            <div class="detail-section">
+                <div class="order-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
+                    <div>
+                        <div class="order-id">ORDER ID: #{{ order.order_id }}</div>
+                        <div class="order-date">{{ order.created_at|date:"d F Y, H:i" }} WIB</div>
+                    </div>
+                    <div class="order-status status-{{ order.status }}">
+                        {{ order.get_status_display }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">Produk yang Dipesan</div>
+                {% for item in order_items %}
+                <div class="detail-item">
+                    {% if item.product and item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" class="detail-item-img">
+                    {% else %}
+                        <div class="detail-item-img" style="background: var(--color-bg);"></div>
+                    {% endif %}
+                    <div class="detail-item-info">
+                        <div class="detail-item-name">{{ item.product_name }}</div>
+                        <div class="detail-item-meta">
+                            {% if item.variant_info %}{{ item.variant_info }}<br>{% endif %}
+                            Qty: {{ item.quantity }}
+                        </div>
+                    </div>
+                    <div class="detail-item-price">{{ item.subtotal|rupiah }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">Informasi Pengiriman</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <div class="detail-item-meta" style="margin-bottom: 4px;">Metode Pengiriman</div>
+                        <div style="font-weight: 500;">{{ order.get_shipping_method_display }}</div>
+                    </div>
+                    <div>
+                        <div class="detail-item-meta" style="margin-bottom: 4px;">Penerima</div>
+                        <div style="font-weight: 500;">{{ order.recipient_name }}</div>
+                        <div>{{ order.phone }}</div>
+                    </div>
+                    {% if order.shipping_method == 'delivery' %}
+                    <div style="grid-column: 1 / -1;">
+                        <div class="detail-item-meta" style="margin-bottom: 4px;">Alamat</div>
+                        <div>{{ order.address }}, {{ order.city }}, {{ order.province }} {{ order.postal_code }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-sidebar">
+            <div class="detail-section">
+                <div class="detail-section-title">Ringkasan Pembayaran</div>
+                <div class="summary-row">
+                    <span>Subtotal Produk</span>
+                    <span>{{ order.subtotal|rupiah }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Ongkos Kirim</span>
+                    <span>
+                        {% if order.shipping_fee == 0 %}
+                            Gratis
+                        {% else %}
+                            {{ order.shipping_fee|rupiah }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="summary-row">
+                    <span>Pajak (11%)</span>
+                    <span>{{ order.tax|rupiah }}</span>
+                </div>
+                
+                <div class="summary-total" style="display: flex; justify-content: space-between; border-top: 1px solid var(--color-border); padding-top: 16px; margin-top: 16px;">
+                    <span>Total Pembayaran</span>
+                    <span style="color: var(--color-primary);">{{ order.total|rupiah }}</span>
+                </div>
+
+                {% if order.status == 'pending' %}
+                <div style="margin-top: 24px;">
+                    <a href="{% url 'orders:checkout_payment' order.order_id %}" class="btn btn-primary" style="width: 100%; text-align: center;">Lanjut Pembayaran</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -156,3 +156,25 @@ def order_success(request, order_id):
         'order_items': order_items,
         'step': 3,
     })
+
+
+@login_required
+def order_history(request):
+    """View user's order history."""
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    
+    return render(request, 'orders/history.html', {
+        'orders': orders,
+    })
+
+
+@login_required
+def order_detail(request, order_id):
+    """View details of a specific order."""
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    order_items = order.items.all()
+    
+    return render(request, 'orders/detail.html', {
+        'order': order,
+        'order_items': order_items,
+    })

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_tags %}
+
+{% block title %}Riwayat Pesanan — Kahta Grafika{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/orders.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="orders-container">
+    <div class="orders-header reveal">
+        <h1 class="orders-title">Riwayat Pesanan</h1>
+    </div>
+
+    {% if orders %}
+        <div class="orders-list reveal reveal-delay-1">
+            {% for order in orders %}
+            <div class="order-card">
+                <div class="order-header">
+                    <div>
+                        <div class="order-id">#{{ order.order_id }}</div>
+                        <div class="order-date">{{ order.created_at|date:"d M Y, H:i" }}</div>
+                    </div>
+                    <div class="order-status status-{{ order.status }}">
+                        {{ order.get_status_display }}
+                    </div>
+                </div>
+                <div class="order-body">
+                    <div class="order-summary">
+                        {% with first_item=order.items.first %}
+                            {% if first_item.product and first_item.product.image %}
+                                <img src="{{ first_item.product.image.url }}" alt="{{ first_item.product_name }}" class="order-img">
+                            {% else %}
+                                <div class="order-img"></div>
+                            {% endif %}
+                        {% endwith %}
+                        <div class="order-info">
+                            <div class="order-items-count">
+                                {% if order.items.count == 1 %}
+                                    {{ order.items.first.product_name }}
+                                {% else %}
+                                    {{ order.items.first.product_name }} & {{ order.items.count|add:"-1" }} produk lainnya
+                                {% endif %}
+                            </div>
+                            <div class="order-total">{{ order.total|rupiah }}</div>
+                        </div>
+                    </div>
+                    <div class="order-actions">
+                        <a href="{% url 'orders:order_detail' order.order_id %}" class="btn-detail">Lihat Detail</a>
+                        {% if order.status == 'pending' %}
+                            <a href="{% url 'orders:checkout_payment' order.order_id %}" class="btn btn-primary" style="padding: 8px 16px;">Bayar</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state reveal">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-border)" stroke-width="1.5" style="margin: 0 auto 20px;">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            <h2>Belum Ada Pesanan</h2>
+            <p>Anda belum membuat pesanan apapun.</p>
+            <a href="{% url 'catalog:product_list' %}" class="btn btn-primary" style="margin-top: 20px;">Mulai Belanja</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
