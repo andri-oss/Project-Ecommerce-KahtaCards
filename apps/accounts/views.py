@@ -101,3 +101,20 @@ def activate(request, uidb64, token):
     else:
         messages.error(request, 'Tautan aktivasi tidak valid!')
         return redirect('accounts:login')
+
+
+from django.contrib.auth.decorators import login_required
+from .forms import ProfileForm
+
+@login_required
+def profile_view(request):
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profil berhasil diperbarui.')
+            return redirect('accounts:profile')
+    else:
+        form = ProfileForm(instance=request.user)
+    
+    return render(request, 'accounts/profile.html', {'form': form})

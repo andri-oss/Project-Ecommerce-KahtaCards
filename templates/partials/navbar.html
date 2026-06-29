@@ -27,9 +27,20 @@
                             <span class="nav-cart-badge" id="cart-badge">{{ cart_item_count }}</span>
                         {% endif %}
                     </a>
-                    <a href="{% url 'orders:order_history' %}" class="nav-login" style="margin-right: 15px;">Pesanan Saya</a>
-                    <span class="nav-login">Halo, {{ user.username }}</span>
-                    <a href="{% url 'accounts:logout' %}" class="nav-register">Keluar</a>
+                    <div class="nav-dropdown-container">
+                        <div class="nav-login nav-dropdown-toggle">
+                            Halo, {{ user.username }}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="nav-dropdown-menu">
+                            <a href="{% url 'accounts:profile' %}" class="nav-dropdown-item">Profil Saya</a>
+                            <a href="{% url 'orders:order_history' %}" class="nav-dropdown-item">Pesanan Saya</a>
+                            <div class="nav-dropdown-divider"></div>
+                            <a href="{% url 'accounts:logout' %}" class="nav-dropdown-item" style="color: #dc3545;">Keluar</a>
+                        </div>
+                    </div>
                 {% else %}
                     <a href="{% url 'accounts:login' %}" class="nav-login">Login</a>
                     <a href="{% url 'accounts:register' %}" class="nav-register">Daftar</a>
