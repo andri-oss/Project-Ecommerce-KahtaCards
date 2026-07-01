@@ -12,6 +12,20 @@
 <div class="orders-container">
     <div class="orders-header reveal">
         <h1 class="orders-title">Riwayat Pesanan</h1>
+        <form method="get" class="date-filter-form">
+            <div class="filter-group">
+                <label for="start_date">Dari:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date|default:'' }}" class="filter-input">
+            </div>
+            <div class="filter-group">
+                <label for="end_date">Sampai:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date|default:'' }}" class="filter-input">
+            </div>
+            <button type="submit" class="btn btn-primary filter-btn">Filter</button>
+            {% if start_date or end_date %}
+                <a href="{% url 'orders:order_history' %}" class="btn btn-outline filter-btn">Reset</a>
+            {% endif %}
+        </form>
     </div>
 
     {% if orders %}

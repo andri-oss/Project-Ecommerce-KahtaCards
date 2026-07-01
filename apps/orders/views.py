@@ -161,10 +161,22 @@ def order_success(request, order_id):
 @login_required
 def order_history(request):
     """View user's order history."""
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    orders = Order.objects.filter(user=request.user)
+    
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if start_date:
+        orders = orders.filter(created_at__date__gte=start_date)
+    if end_date:
+        orders = orders.filter(created_at__date__lte=end_date)
+        
+    orders = orders.order_by('-created_at')
     
     return render(request, 'orders/history.html', {
         'orders': orders,
+        'start_date': start_date,
+        'end_date': end_date,
     })
 
 
