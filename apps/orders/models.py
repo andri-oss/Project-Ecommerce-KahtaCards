@@ -53,6 +53,10 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def can_customer_cancel(self):
+        """Customers may only self-cancel before the order starts being fulfilled."""
+        return self.status in (self.Status.PENDING, self.Status.PAID)
+
     def get_allowed_next_statuses(self):
         """Statuses an admin is allowed to move this order to, given its current status and shipping method."""
         if self.status in (self.Status.PENDING, self.Status.PAID, self.Status.DELIVERED, self.Status.CANCELLED):
@@ -99,3 +103,22 @@ class OrderItem(models.Model):
     @property
     def subtotal(self):
         return self.price * self.quantity
+
+
+class RefundRequest(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Menunggu Diproses'
+        COMPLETED = 'completed', 'Refund Selesai'
+
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='refund_request')
+    bank_name = models.CharField(max_length=100)
+    account_number = models.CharField(max_length=50)
+    account_holder_name = models.CharField(max_length=150)
+    reason = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Refund #{self.order.order_id}"

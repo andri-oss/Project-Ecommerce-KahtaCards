@@ -62,7 +62,11 @@
                 </div>
                 {% if order.tracking_number %}
                 <div class="order-track-resi">
-                    Nomor Resi: <strong>{{ order.tracking_number }}</strong>
+                    Nomor Resi: <strong id="resiValue">{{ order.tracking_number }}</strong>
+                    <button type="button" id="copyResiBtn" class="btn-copy-resi" data-resi="{{ order.tracking_number }}">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span id="copyResiLabel">Salin</span>
+                    </button>
                 </div>
                 {% endif %}
                 {% endif %}
@@ -143,8 +147,156 @@
                     <a href="{% url 'orders:checkout_payment' order.order_id %}" class="btn btn-primary" style="width: 100%; text-align: center;">Lanjut Pembayaran</a>
                 </div>
                 {% endif %}
+
+                {% if order.can_customer_cancel %}
+                <div style="margin-top: 12px;">
+                    <button type="button" id="cancelOrderBtn" class="btn btn-outline btn-cancel-order" style="width: 100%; text-align: center;" data-status="{{ order.status }}">Batalkan Pesanan</button>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+{% if order.can_customer_cancel %}
+<div id="cancelOrderModal" class="cancel-modal-overlay">
+    <div class="cancel-modal">
+        <div class="cancel-modal-header">
+            <h3>Batalkan Pesanan</h3>
+            <button type="button" class="cancel-modal-close" id="cancelModalCloseBtn">&times;</button>
+        </div>
+        <div class="cancel-modal-body">
+            {% if order.status == 'paid' %}
+            <p>Pesanan ini sudah dibayar. Silakan isi data rekening Anda agar tim kami dapat memproses pengembalian dana (refund).</p>
+            <div class="cancel-form-group">
+                <label for="bankName">Nama Bank</label>
+                <input type="text" id="bankName" placeholder="Contoh: BCA">
+            </div>
+            <div class="cancel-form-group">
+                <label for="accountNumber">Nomor Rekening</label>
+                <input type="text" id="accountNumber" placeholder="Contoh: 1234567890">
+            </div>
+            <div class="cancel-form-group">
+                <label for="accountHolderName">Nama Pemilik Rekening</label>
+                <input type="text" id="accountHolderName" placeholder="Sesuai buku tabungan/kartu ATM">
+            </div>
+            <div class="cancel-form-group">
+                <label for="cancelReason">Alasan Pembatalan (opsional)</label>
+                <textarea id="cancelReason" rows="2" placeholder="Ceritakan alasan Anda membatalkan pesanan ini"></textarea>
+            </div>
+            {% else %}
+            <p>Pesanan ini belum dibayar, jadi tidak ada dana yang perlu dikembalikan. Yakin ingin membatalkan pesanan ini?</p>
+            {% endif %}
+            <p id="cancelErrorMsg" class="cancel-error-msg"></p>
+        </div>
+        <div class="cancel-modal-footer">
+            <button type="button" class="btn btn-outline" id="cancelModalBackBtn">Batal</button>
+            <button type="button" class="btn btn-danger" id="cancelModalConfirmBtn">Ya, Batalkan Pesanan</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if order.can_customer_cancel %}
+<script>
+(function() {
+    const openBtn = document.getElementById('cancelOrderBtn');
+    const modal = document.getElementById('cancelOrderModal');
+    const closeBtn = document.getElementById('cancelModalCloseBtn');
+    const backBtn = document.getElementById('cancelModalBackBtn');
+    const confirmBtn = document.getElementById('cancelModalConfirmBtn');
+    const errorMsg = document.getElementById('cancelErrorMsg');
+    const isPaid = openBtn.dataset.status === 'paid';
+
+    function getCookie(name) {
+        const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return v ? v.pop() : '';
+    }
+
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.classList.add('show');
+    }
+
+    function closeModal() {
+        modal.classList.remove('show');
+        errorMsg.classList.remove('show');
+    }
+
+    openBtn.addEventListener('click', () => modal.classList.add('show'));
+    closeBtn.addEventListener('click', closeModal);
+    backBtn.addEventListener('click', closeModal);
+
+    confirmBtn.addEventListener('click', function() {
+        const payload = {};
+
+        if (isPaid) {
+            const bankName = document.getElementById('bankName').value.trim();
+            const accountNumber = document.getElementById('accountNumber').value.trim();
+            const accountHolderName = document.getElementById('accountHolderName').value.trim();
+
+            if (!bankName || !accountNumber || !accountHolderName) {
+                showError('Nama bank, nomor rekening, dan nama pemilik rekening wajib diisi.');
+                return;
+            }
+
+            payload.bank_name = bankName;
+            payload.account_number = accountNumber;
+            payload.account_holder_name = accountHolderName;
+            payload.reason = document.getElementById('cancelReason').value.trim();
+        }
+
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Memproses...';
+
+        fetch("{% url 'orders:order_cancel' order.order_id %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Ya, Batalkan Pesanan';
+                showError(data.error || 'Gagal membatalkan pesanan.');
+            }
+        })
+        .catch(() => {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Ya, Batalkan Pesanan';
+            showError('Terjadi kesalahan. Silakan coba lagi.');
+        });
+    });
+})();
+</script>
+{% endif %}
+{% if order.tracking_number %}
+<script>
+(function() {
+    const copyBtn = document.getElementById('copyResiBtn');
+    const copyLabel = document.getElementById('copyResiLabel');
+    if (!copyBtn) return;
+
+    copyBtn.addEventListener('click', function() {
+        const resi = copyBtn.dataset.resi;
+        navigator.clipboard.writeText(resi).then(function() {
+            copyBtn.classList.add('is-copied');
+            copyLabel.textContent = 'Tersalin!';
+            setTimeout(function() {
+                copyBtn.classList.remove('is-copied');
+                copyLabel.textContent = 'Salin';
+            }, 2000);
+        });
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

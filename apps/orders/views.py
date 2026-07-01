@@ -1,6 +1,10 @@
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Order, OrderItem
+from django.http import JsonResponse
+from django.utils import timezone
+from .models import Order, OrderItem, RefundRequest
 from apps.cart.models import Cart
 
 
@@ -185,8 +189,47 @@ def order_detail(request, order_id):
     """View details of a specific order."""
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     order_items = order.items.all()
-    
+
     return render(request, 'orders/detail.html', {
         'order': order,
         'order_items': order_items,
     })
+
+
+@login_required
+def order_cancel(request, order_id):
+    """AJAX: customer cancels their own order before it is fulfilled."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False}, status=400)
+
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    if not order.can_customer_cancel():
+        return JsonResponse({'success': False, 'error': 'Pesanan ini tidak dapat dibatalkan.'}, status=400)
+
+    data = json.loads(request.body) if request.body else {}
+
+    if order.status == Order.Status.PAID:
+        bank_name = data.get('bank_name', '').strip()
+        account_number = data.get('account_number', '').strip()
+        account_holder_name = data.get('account_holder_name', '').strip()
+
+        if not (bank_name and account_number and account_holder_name):
+            return JsonResponse({
+                'success': False,
+                'error': 'Nama bank, nomor rekening, dan nama pemilik rekening wajib diisi untuk proses refund.',
+            }, status=400)
+
+        RefundRequest.objects.update_or_create(
+            order=order,
+            defaults={
+                'bank_name': bank_name,
+                'account_number': account_number,
+                'account_holder_name': account_holder_name,
+                'reason': data.get('reason', '').strip(),
+            }
+        )
+
+    order.status = Order.Status.CANCELLED
+    order.save(update_fields=['status', 'updated_at'])
+
+    return JsonResponse({'success': True})

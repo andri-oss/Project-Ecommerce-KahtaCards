@@ -6,7 +6,7 @@ from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from datetime import timedelta
 
-from apps.orders.models import Order, OrderItem
+from apps.orders.models import Order, OrderItem, RefundRequest
 from apps.catalog.models import Product, Category
 from apps.accounts.models import User
 from apps.payments.models import Payment
@@ -341,10 +341,16 @@ def order_detail_view(request, pk):
     except Payment.DoesNotExist:
         payment = None
 
+    try:
+        refund_request = order.refund_request
+    except RefundRequest.DoesNotExist:
+        refund_request = None
+
     return render(request, 'dashboard/order_detail.html', {
         'order': order,
         'items': items,
         'payment': payment,
+        'refund_request': refund_request,
         'allowed_next_statuses': order.get_allowed_next_statuses(),
     })
 
@@ -370,6 +376,20 @@ def order_update_status(request, pk):
                 'status_display': order.get_status_display()
             })
     return JsonResponse({'success': False}, status=400)
+
+
+@staff_member_required(login_url='/auth/login/')
+def refund_mark_completed(request, pk):
+    """AJAX: mark a customer's refund request as completed after manual bank transfer."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False}, status=400)
+
+    refund = get_object_or_404(RefundRequest, order__pk=pk)
+    refund.status = RefundRequest.Status.COMPLETED
+    refund.processed_at = timezone.now()
+    refund.save(update_fields=['status', 'processed_at'])
+
+    return JsonResponse({'success': True})
 
 
 @staff_member_required(login_url='/auth/login/')
