@@ -159,30 +159,56 @@
     <div class="adm-update-panel" style="background: #fbfaf9; border: 1px solid #e8e0d5; border-radius: 12px; padding: 24px; margin-top: 24px;">
       <div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a7060;margin-bottom:16px;">Ubah Status Pesanan</div>
       
-      <div class="adm-status-options" id="statusOptions">
-        <!-- Pending: locked, never editable by admin -->
-        <div class="adm-status-option {% if order.status == 'pending' %}current{% else %}past{% endif %}" data-value="pending">Menunggu<br>Pembayaran</div>
-
-        <!-- Paid: locked, never editable by admin -->
-        <div class="adm-status-option {% if order.status == 'pending' %}future{% elif order.status == 'paid' %}current{% else %}past{% endif %}" data-value="paid">Sudah<br>Dibayar</div>
-
-        {% if order.shipping_method == 'delivery' %}
-        <!-- Processing -->
-        <div class="adm-status-option {% if 'processing' in allowed_next_statuses %}available{% elif order.status in 'pending,paid' %}future{% elif order.status == 'processing' %}current{% else %}past{% endif %}" data-value="processing">Sedang<br>Diproses</div>
-
-        <!-- Shipped -->
-        <div class="adm-status-option {% if 'shipped' in allowed_next_statuses %}available{% elif order.status in 'pending,paid,processing' %}future{% elif order.status == 'shipped' %}current{% else %}past{% endif %}" data-value="shipped">Sedang<br>Dikirim</div>
-        {% endif %}
-
-        <!-- Delivered -->
-        <div class="adm-status-option {% if 'delivered' in allowed_next_statuses %}available{% elif order.status == 'delivered' %}current{% elif order.status == 'cancelled' %}past{% else %}future{% endif %}" style="grid-column: span 2;" data-value="delivered">Pesanan Selesai</div>
-
-        <!-- Cancelled -->
-        <div class="adm-status-option cancelled {% if order.status == 'cancelled' %}current{% elif 'cancelled' in allowed_next_statuses %}available{% else %}past{% endif %}" data-value="cancelled">Dibatalkan</div>
+      {% if order.status == 'cancelled' %}
+      <div class="adm-status-cancelled-notice">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        Pesanan ini telah dibatalkan.
       </div>
-      
-      <input type="hidden" id="statusSelect" value="{{ order.status }}">
-      <button class="adm-btn-update" id="updateStatusBtn" data-order-pk="{{ order.pk }}" style="width: 100%; padding: 14px; font-size: 14px; border-radius: 8px; transition: all 0.3s; opacity: 0.5; pointer-events: none;">Simpan Perubahan</button>
+      {% else %}
+      {# Progress stepper: shows the fixed path this order follows #}
+      <div class="adm-status-stepper">
+        <div class="adm-step {% if order.status == 'pending' %}is-current{% else %}is-done{% endif %}">
+          <span class="adm-step-dot"></span>
+          <span class="adm-step-label">Menunggu Pembayaran</span>
+        </div>
+        <div class="adm-step {% if order.status == 'pending' %}is-future{% elif order.status == 'paid' %}is-current{% else %}is-done{% endif %}">
+          <span class="adm-step-dot"></span>
+          <span class="adm-step-label">Sudah Dibayar</span>
+        </div>
+        {% if order.shipping_method == 'delivery' %}
+        <div class="adm-step {% if order.status == 'processing' %}is-current{% elif order.status in 'pending,paid' %}is-future{% else %}is-done{% endif %}">
+          <span class="adm-step-dot"></span>
+          <span class="adm-step-label">Sedang Diproses</span>
+        </div>
+        <div class="adm-step {% if order.status == 'shipped' %}is-current{% elif order.status in 'pending,paid,processing' %}is-future{% else %}is-done{% endif %}">
+          <span class="adm-step-dot"></span>
+          <span class="adm-step-label">Sedang Dikirim</span>
+        </div>
+        {% endif %}
+        <div class="adm-step {% if order.status == 'delivered' %}is-current{% else %}is-future{% endif %}">
+          <span class="adm-step-dot"></span>
+          <span class="adm-step-label">Pesanan Selesai</span>
+        </div>
+      </div>
+
+      {# Action buttons: only the statuses the admin may move to right now #}
+      <div class="adm-status-actions">
+        {% for next in allowed_next_statuses %}
+          {% if next == 'cancelled' %}
+          <button type="button" class="adm-status-action-btn is-danger" data-value="cancelled">Batalkan Pesanan</button>
+          {% elif next == 'processing' %}
+          <button type="button" class="adm-status-action-btn is-primary" data-value="processing">Proses Pesanan</button>
+          {% elif next == 'shipped' %}
+          <button type="button" class="adm-status-action-btn is-primary" data-value="shipped">Kirim Pesanan</button>
+          {% elif next == 'delivered' %}
+          <button type="button" class="adm-status-action-btn is-primary" data-value="delivered">Selesaikan Pesanan</button>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <input type="hidden" id="statusSelect" value="">
+      <button class="adm-btn-update" id="updateStatusBtn" data-order-pk="{{ order.pk }}" style="display:none;">Simpan Perubahan</button>
     </div>
   </div>
 
@@ -325,85 +351,136 @@
     background: var(--color-primary-dark, #a67632);
   }
   
-  .adm-status-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 20px;
+  /* ── Status stepper ─────────────────────────────────────── */
+  .adm-status-stepper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 22px;
   }
-  .adm-status-option {
-    padding: 12px 10px;
-    border: 1px solid #e8e0d5;
-    border-radius: 8px;
-    background: #fff;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    color: #8a7060;
-    text-align: center;
-    transition: all 0.2s ease;
-    user-select: none;
+  .adm-step {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
-    line-height: 1.3;
+    gap: 12px;
+    padding: 7px 0;
+    padding-left: 4px;
   }
-  /* PAST: completed steps */
-  .adm-status-option.past {
-    background: #f7f5f2;
+  .adm-step::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: -50%;
+    width: 2px;
+    height: 100%;
+    background: #e8e0d5;
+    z-index: 0;
+  }
+  .adm-step:first-child::before {
+    display: none;
+  }
+  .adm-step-dot {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #e8e0d5;
+  }
+  .adm-step-label {
+    font-size: 13px;
+    font-weight: 600;
     color: #b5a89f;
-    border-color: #e8e0d5;
-    pointer-events: none;
-    opacity: 0.7;
   }
-  
-  /* CURRENT: the current active status */
-  .adm-status-option.current {
+  .adm-step.is-done .adm-step-dot {
+    background: var(--color-primary, #c08b3a);
+    border-color: var(--color-primary, #c08b3a);
+  }
+  .adm-step.is-done::before {
+    background: var(--color-primary, #c08b3a);
+  }
+  .adm-step.is-done .adm-step-label {
+    color: #5c5347;
+  }
+  .adm-step.is-current .adm-step-dot {
+    background: #fff;
+    border-color: var(--color-primary, #c08b3a);
+    box-shadow: 0 0 0 3px rgba(192, 139, 58, 0.18);
+  }
+  .adm-step.is-current .adm-step-dot::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-primary, #c08b3a);
+  }
+  .adm-step.is-current .adm-step-label {
+    color: #4a3b32;
+    font-weight: 700;
+  }
+  .adm-step.is-future .adm-step-dot,
+  .adm-step.is-future::before {
+    border-color: #e8e0d5;
+    background: #fff;
+  }
+  .adm-step.is-future .adm-step-label {
+    color: #d1c8c1;
+  }
+
+  /* ── Cancelled notice ───────────────────────────────────── */
+  .adm-status-cancelled-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    background: #fff5f5;
+    border: 1px solid #f3c9c9;
+    border-radius: 8px;
+    color: #b23c3c;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  /* ── Action buttons ─────────────────────────────────────── */
+  .adm-status-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .adm-status-action-btn {
+    width: 100%;
+    padding: 13px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .adm-status-action-btn.is-primary {
     background: var(--color-primary, #c08b3a);
     color: #fff;
-    border-color: var(--color-primary, #c08b3a);
-    box-shadow: 0 4px 12px rgba(192, 139, 58, 0.2);
-    pointer-events: none;
   }
-  .adm-status-option.current.cancelled {
-    background: #d32f2f;
-    border-color: #d32f2f;
-    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
+  .adm-status-action-btn.is-primary:hover {
+    background: var(--color-primary-dark, #a67632);
   }
-  
-  /* FUTURE: steps not yet reachable */
-  .adm-status-option.future {
+  .adm-status-action-btn.is-danger {
     background: #fff;
-    color: #d1c8c1;
-    border: 1px dashed #e8e0d5;
-    pointer-events: none;
-  }
-  
-  /* AVAILABLE: steps the admin can click to advance */
-  .adm-status-option.available {
-    background: #fff;
-    color: #8a7060;
-    border: 1px solid #c08b3a;
-    cursor: pointer;
-  }
-  .adm-status-option.available:hover, .adm-status-option.available.selected {
-    background: #fdfaf6;
-    color: #c08b3a;
-    box-shadow: 0 0 0 1px #c08b3a;
-  }
-  
-  /* Cancelled specific */
-  .adm-status-option.cancelled {
-    grid-column: span 2;
-  }
-  .adm-status-option.cancelled.available {
-    border-color: #d32f2f;
     color: #d32f2f;
+    border-color: #f0c4c4;
   }
-  .adm-status-option.cancelled.available:hover, .adm-status-option.cancelled.available.selected {
+  .adm-status-action-btn.is-danger:hover {
     background: #fff5f5;
-    color: #d32f2f;
-    box-shadow: 0 0 0 1px #d32f2f;
+    border-color: #d32f2f;
   }
 </style>
 {% endblock %}
@@ -412,45 +489,24 @@
 <script>
 (function() {
   const btn = document.getElementById('updateStatusBtn');
-  const sel = document.getElementById('statusSelect');
   const trackingModal = document.getElementById('trackingModal');
   const trackingInput = document.getElementById('trackingInput');
   const submitTrackingBtn = document.getElementById('submitTrackingBtn');
+  const actionButtons = document.querySelectorAll('.adm-status-action-btn');
 
-  if (!btn || !sel) return;
+  if (!btn) return;
 
   function getCookie(name) {
     const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return v ? v.pop() : '';
   }
 
-  const statusOptions = document.querySelectorAll('.adm-status-option.available');
-  const initialStatus = '{{ order.status }}';
-
   window.closeTrackingModal = function() {
     trackingModal.classList.remove('show');
-    sel.value = initialStatus;
-    if(statusOptions) {
-      statusOptions.forEach(o => o.classList.remove('selected'));
-    }
-    btn.style.opacity = '0.5';
-    btn.style.pointerEvents = 'none';
   };
 
-  if (statusOptions.length > 0) {
-    statusOptions.forEach(opt => {
-      opt.addEventListener('click', function() {
-        statusOptions.forEach(o => o.classList.remove('selected'));
-        this.classList.add('selected');
-        sel.value = this.dataset.value;
-        
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
-      });
-    });
-  }
-
-  function executeStatusUpdate(payload) {
+  function executeStatusUpdate(payload, triggerEl) {
+    actionButtons.forEach(b => b.disabled = true);
     fetch('/dashboard/orders/' + btn.dataset.orderPk + '/update-status/', {
       method: 'POST',
       headers: {
@@ -462,29 +518,34 @@
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        btn.textContent = '✓ Updated!';
-        btn.style.background = '#2e7d32';
+        if (triggerEl) triggerEl.textContent = '✓ Berhasil';
         if (trackingModal) trackingModal.classList.remove('show');
-        setTimeout(() => location.reload(), 800);
+        setTimeout(() => location.reload(), 600);
       } else {
         alert("Gagal mengupdate status.");
+        actionButtons.forEach(b => b.disabled = false);
       }
     });
   }
 
-  btn.addEventListener('click', function() {
-    const selectedStatus = sel.value;
-    let payload = { status: selectedStatus };
-    const shippingMethod = '{{ order.shipping_method }}';
+  actionButtons.forEach(opt => {
+    opt.addEventListener('click', function() {
+      const selectedStatus = this.dataset.value;
+      const shippingMethod = '{{ order.shipping_method }}';
 
-    if (selectedStatus === 'shipped' && shippingMethod === 'delivery') {
-      trackingModal.classList.add('show');
-      trackingInput.value = '';
-      trackingInput.focus();
-      return; 
-    }
+      if (selectedStatus === 'shipped' && shippingMethod === 'delivery') {
+        trackingModal.classList.add('show');
+        trackingInput.value = '';
+        trackingInput.focus();
+        return;
+      }
 
-    executeStatusUpdate(payload);
+      if (selectedStatus === 'cancelled' && !confirm('Batalkan pesanan ini? Tindakan ini tidak dapat diubah kembali.')) {
+        return;
+      }
+
+      executeStatusUpdate({ status: selectedStatus }, this);
+    });
   });
 
   if (submitTrackingBtn) {
@@ -494,7 +555,7 @@
         alert("Nomor resi tidak boleh kosong untuk pesanan yang dikirim.");
         return;
       }
-      executeStatusUpdate({ status: 'shipped', tracking_number: tracking });
+      executeStatusUpdate({ status: 'shipped', tracking_number: tracking }, submitTrackingBtn);
     });
   }
 })();
