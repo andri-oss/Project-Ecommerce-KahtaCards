@@ -129,6 +129,10 @@
       <div class="adm-detail-title">Pengiriman</div>
       <div class="adm-detail-label">Metode</div>
       <div class="adm-detail-value" style="margin-bottom:12px;">{{ order.get_shipping_method_display }}</div>
+      {% if order.tracking_number %}
+      <div class="adm-detail-label">Nomor Resi</div>
+      <div class="adm-detail-value" style="margin-bottom:12px;font-weight:700;color:var(--color-primary);">{{ order.tracking_number }}</div>
+      {% endif %}
       <div class="adm-detail-label">Alamat</div>
       <div class="adm-detail-value" style="margin-bottom:12px;line-height:1.5;">{{ order.address }}, {{ order.city }}, {{ order.province }} {{ order.postal_code }}</div>
     </div>
@@ -184,13 +188,28 @@
   }
 
   btn.addEventListener('click', function() {
+    const selectedStatus = sel.value;
+    let payload = { status: selectedStatus };
+    const shippingMethod = '{{ order.shipping_method }}';
+
+    if (selectedStatus === 'shipped' && shippingMethod === 'delivery') {
+      const tracking = prompt("Silakan masukkan Nomor Resi pengiriman:");
+      if (tracking === null) return; // cancelled
+      if (tracking.trim() !== "") {
+        payload.tracking_number = tracking.trim();
+      } else {
+        alert("Nomor resi tidak boleh kosong untuk pesanan yang dikirim.");
+        return;
+      }
+    }
+
     fetch('/dashboard/orders/' + this.dataset.orderPk + '/update-status/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCookie('csrftoken'),
       },
-      body: JSON.stringify({ status: sel.value }),
+      body: JSON.stringify(payload),
     })
     .then(r => r.json())
     .then(data => {
@@ -198,6 +217,8 @@
         btn.textContent = '✓ Updated!';
         btn.style.background = '#2e7d32';
         setTimeout(() => location.reload(), 800);
+      } else {
+        alert("Gagal mengupdate status.");
       }
     });
   });

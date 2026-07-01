@@ -356,9 +356,13 @@ def order_update_status(request, pk):
         import json
         data = json.loads(request.body)
         new_status = data.get('status')
+        tracking_number = data.get('tracking_number')
+        
         if new_status in dict(Order.Status.choices):
             order.status = new_status
-            order.save(update_fields=['status', 'updated_at'])
+            if tracking_number:
+                order.tracking_number = tracking_number
+            order.save(update_fields=['status', 'tracking_number', 'updated_at'])
             return JsonResponse({
                 'success': True,
                 'status': order.status,

@@ -42,6 +42,7 @@ class Order(models.Model):
     postal_code = models.CharField(max_length=10)
     address = models.TextField()
     save_address = models.BooleanField(default=False)
+    tracking_number = models.CharField(max_length=100, blank=True, null=True)
 
     # Totals
     subtotal = models.DecimalField(max_digits=12, decimal_places=0, default=0)
