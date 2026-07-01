@@ -91,7 +91,8 @@
         data-product-name="{{ product.name }}">
         Tambah ke Keranjang
       </button>
-      <button type="button" class="pd-btn-buy">
+      <button type="button" class="pd-btn-buy" id="pdBuyNow"
+        data-product-id="{{ product.pk }}">
         Beli Langsung
       </button>
     </div>
@@ -233,42 +234,44 @@
     });
   });
 
+  /* ── Shared: add current product config to cart ───────── */
+  function addCurrentProductToCart(productId) {
+    const qty = parseInt(qtyInput?.value || '1');
+    const note = document.getElementById('designNote')?.value || '';
+
+    const formData = new FormData();
+    formData.append('product_id', productId);
+    formData.append('quantity', qty);
+    formData.append('design_note', note);
+
+    if (uploadInput && uploadInput.files.length > 0) {
+      formData.append('design_file', uploadInput.files[0]);
+    }
+
+    return fetch('/cart/add/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: formData,
+    }).then(r => {
+      if (r.status === 403 || r.redirected) {
+        window.location.href = '/auth/login/?next=' + encodeURIComponent(window.location.pathname);
+        return null;
+      }
+      return r.json();
+    });
+  }
+
   /* ── Add to Cart ───────────────────────────── */
   const cartBtn = document.getElementById('pdAddToCart');
   if (cartBtn) {
     cartBtn.addEventListener('click', function() {
-      const productId = this.dataset.productId;
-      const qty = parseInt(qtyInput?.value || '1');
-      const note = document.getElementById('designNote')?.value || '';
-      
-      const formData = new FormData();
-      formData.append('product_id', productId);
-      formData.append('quantity', qty);
-      formData.append('design_note', note);
-      
-      if (uploadInput && uploadInput.files.length > 0) {
-        formData.append('design_file', uploadInput.files[0]);
-      }
-
       // Add loading state
-      const originalText = this.textContent;
       this.textContent = 'Menambahkan...';
       this.disabled = true;
 
-      fetch('/cart/add/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-        },
-        body: formData,
-      })
-      .then(r => {
-        if (r.status === 403 || r.redirected) {
-          window.location.href = '/auth/login/?next=' + encodeURIComponent(window.location.pathname);
-          return null;
-        }
-        return r.json();
-      })
+      addCurrentProductToCart(this.dataset.productId)
       .then(data => {
         if (!data) return;
         if (data.success) {
@@ -299,6 +302,33 @@
         this.textContent = 'Tambah ke Keranjang';
       })
       .finally(() => {
+        this.disabled = false;
+      });
+    });
+  }
+
+  /* ── Buy Now ────────────────────────────────── */
+  const buyBtn = document.getElementById('pdBuyNow');
+  if (buyBtn) {
+    buyBtn.addEventListener('click', function() {
+      const originalText = this.textContent;
+      this.textContent = 'Memproses...';
+      this.disabled = true;
+
+      addCurrentProductToCart(this.dataset.productId)
+      .then(data => {
+        if (!data) return;
+        if (data.success) {
+          window.location.href = "{% url 'orders:checkout_shipping' %}";
+        } else {
+          alert(data.error || 'Gagal memproses pesanan.');
+          this.textContent = originalText;
+          this.disabled = false;
+        }
+      })
+      .catch(() => {
+        alert('Gagal memproses pesanan');
+        this.textContent = originalText;
         this.disabled = false;
       });
     });

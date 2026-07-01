@@ -12,7 +12,11 @@
     <p class="adm-page-desc" style="display:flex;align-items:center;gap:10px;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Dibuat pada {{ order.created_at|date:"d F Y, H:i" }} WIB
+      {% if refund_request.status == 'pending' %}
+      <span class="adm-badge adm-badge-refund_pending">Menunggu Refund</span>
+      {% else %}
       <span class="adm-badge adm-badge-{{ order.status }}">{{ order.get_status_display }}</span>
+      {% endif %}
     </p>
   </div>
   <div style="display:flex;gap:10px;">
@@ -224,6 +228,13 @@
           <span class="adm-step-label">Pesanan Selesai</span>
         </div>
       </div>
+
+      {% if order.status == 'shipped' and order.shipping_method == 'delivery' %}
+      <div class="adm-status-waiting-notice">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Menunggu customer mengonfirmasi penerimaan pesanan.
+      </div>
+      {% endif %}
 
       {# Action buttons: only the statuses the admin may move to right now #}
       <div class="adm-status-actions">
@@ -479,6 +490,21 @@
     font-size: 13px;
     font-weight: 600;
     margin-bottom: 4px;
+  }
+
+  /* ── Waiting on customer notice ──────────────────────────── */
+  .adm-status-waiting-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    background: #fff8e1;
+    border: 1px solid #ffecb3;
+    border-radius: 8px;
+    color: #8a6d1f;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
   }
 
   /* ── Action buttons ─────────────────────────────────────── */

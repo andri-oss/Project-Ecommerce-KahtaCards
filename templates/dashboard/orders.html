@@ -27,6 +27,7 @@
           <a href="?status=processing" class="adm-filter-pill {% if status_filter == 'processing' %}active{% endif %}">Diproses</a>
           <a href="?status=shipped" class="adm-filter-pill {% if status_filter == 'shipped' %}active{% endif %}">Dikirim</a>
           <a href="?status=delivered" class="adm-filter-pill {% if status_filter == 'delivered' %}active{% endif %}">Selesai</a>
+          <a href="?status=refund_pending" class="adm-filter-pill {% if status_filter == 'refund_pending' %}active{% endif %}">Menunggu Refund</a>
         </div>
       </div>
     </div>
@@ -56,7 +57,11 @@
         <td>{{ order.created_at|date:"d M Y" }}</td>
         <td><strong>{{ order.total|rupiah }}</strong></td>
         <td>
+          {% if order.refund_request.status == 'pending' %}
+          <span class="adm-badge adm-badge-refund_pending">Menunggu Refund</span>
+          {% else %}
           <span class="adm-badge adm-badge-{{ order.status }}">{{ order.get_status_display }}</span>
+          {% endif %}
         </td>
         <td><a href="{% url 'dashboard:order_detail' order.pk %}" class="adm-link">Detail →</a></td>
       </tr>
@@ -101,6 +106,10 @@
   <div class="adm-summary-card">
     <div class="adm-summary-label">Total Selesai (Bulan Ini)</div>
     <div class="adm-summary-value">{{ summary.delivered }}</div>
+  </div>
+  <div class="adm-summary-card" style="border: 1px solid #f0c4c4;">
+    <div class="adm-summary-label">Menunggu Refund</div>
+    <div class="adm-summary-value" style="color:#c62828;">{{ summary.refund_pending }}</div>
   </div>
 </div>
 

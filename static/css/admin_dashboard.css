@@ -382,6 +382,7 @@ table.adm-table {
 .adm-badge-completed { background: #e8f5e9; color: #2e7d32; }
 .adm-badge-failed { background: #fce4ec; color: #c62828; }
 .adm-badge-expired { background: #f5f1ec; color: #8a7060; }
+.adm-badge-refund_pending { background: #ffebee; color: #c62828; }
 .adm-badge-active { background: #e8f5e9; color: #2e7d32; }
 .adm-badge-inactive { background: #f5f1ec; color: #8a7060; }
 

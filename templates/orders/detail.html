@@ -173,6 +173,13 @@
                 </div>
                 {% endif %}
 
+                {% if order.can_customer_confirm_delivery %}
+                <div style="margin-top: 24px;">
+                    <button type="button" id="confirmDeliveryBtn" class="btn btn-primary" style="width: 100%; text-align: center;">Pesanan Sudah Diterima</button>
+                    <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 8px 0 0; text-align: center;">Konfirmasi setelah barang Anda terima untuk menyelesaikan pesanan.</p>
+                </div>
+                {% endif %}
+
                 {% if order.can_customer_cancel %}
                 <div style="margin-top: 12px;">
                     <button type="button" id="cancelOrderBtn" class="btn btn-outline btn-cancel-order" style="width: 100%; text-align: center;" data-status="{{ order.status }}">Batalkan Pesanan</button>
@@ -319,6 +326,45 @@
                 copyBtn.classList.remove('is-copied');
                 copyLabel.textContent = 'Salin';
             }, 2000);
+        });
+    });
+})();
+</script>
+{% endif %}
+{% if order.can_customer_confirm_delivery %}
+<script>
+(function() {
+    const btn = document.getElementById('confirmDeliveryBtn');
+    if (!btn) return;
+
+    function getCookie(name) {
+        const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return v ? v.pop() : '';
+    }
+
+    btn.addEventListener('click', function() {
+        if (!confirm('Konfirmasi bahwa pesanan ini sudah Anda terima?')) return;
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+
+        fetch("{% url 'orders:order_confirm_delivery' order.order_id %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error || 'Gagal menyelesaikan pesanan.');
+                btn.disabled = false;
+                btn.textContent = 'Pesanan Sudah Diterima';
+            }
+        })
+        .catch(() => {
+            alert('Terjadi kesalahan. Silakan coba lagi.');
+            btn.disabled = false;
+            btn.textContent = 'Pesanan Sudah Diterima';
         });
     });
 })();

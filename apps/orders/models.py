@@ -57,8 +57,16 @@ class Order(models.Model):
         """Customers may only self-cancel before the order starts being fulfilled."""
         return self.status in (self.Status.PENDING, self.Status.PAID)
 
+    def can_customer_confirm_delivery(self):
+        """Only the customer may close out a shipped delivery order — the admin can't mark it delivered for them."""
+        return self.status == self.Status.SHIPPED and self.shipping_method == self.ShippingMethod.DELIVERY
+
     def get_allowed_next_statuses(self):
-        """Statuses an admin is allowed to move this order to, given its current status and shipping method."""
+        """Statuses an admin is allowed to move this order to, given its current status and shipping method.
+
+        Note: once a delivery order is 'shipped', the admin can only cancel it —
+        marking it 'delivered' is reserved for the customer via can_customer_confirm_delivery().
+        """
         if self.status in (self.Status.PENDING, self.Status.PAID, self.Status.DELIVERED, self.Status.CANCELLED):
             if self.status == self.Status.PAID:
                 if self.shipping_method == self.ShippingMethod.PICKUP:
@@ -68,7 +76,7 @@ class Order(models.Model):
         if self.status == self.Status.PROCESSING:
             return [self.Status.SHIPPED, self.Status.CANCELLED]
         if self.status == self.Status.SHIPPED:
-            return [self.Status.DELIVERED, self.Status.CANCELLED]
+            return [self.Status.CANCELLED]
         return []
 
     def save(self, *args, **kwargs):

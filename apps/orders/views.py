@@ -240,3 +240,19 @@ def order_cancel(request, order_id):
     order.save(update_fields=['status', 'updated_at'])
 
     return JsonResponse({'success': True})
+
+
+@login_required
+def order_confirm_delivery(request, order_id):
+    """AJAX: customer confirms a shipped order has arrived, closing it out as delivered."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False}, status=400)
+
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    if not order.can_customer_confirm_delivery():
+        return JsonResponse({'success': False, 'error': 'Pesanan ini tidak dapat diselesaikan.'}, status=400)
+
+    order.status = Order.Status.DELIVERED
+    order.save(update_fields=['status', 'updated_at'])
+
+    return JsonResponse({'success': True})

@@ -50,7 +50,7 @@ def dashboard_view(request):
         })
 
     # Recent orders
-    recent_orders = Order.objects.select_related('user').order_by('-created_at')[:10]
+    recent_orders = Order.objects.select_related('user', 'refund_request').order_by('-created_at')[:10]
 
     context = {
         'total_orders_today': total_orders_today,
@@ -300,9 +300,11 @@ def orders_view(request):
     status_filter = request.GET.get('status', '')
     search = request.GET.get('q', '')
 
-    orders = Order.objects.select_related('user').order_by('-created_at')
+    orders = Order.objects.select_related('user', 'refund_request').order_by('-created_at')
 
-    if status_filter:
+    if status_filter == 'refund_pending':
+        orders = orders.filter(refund_request__status=RefundRequest.Status.PENDING)
+    elif status_filter:
         orders = orders.filter(status=status_filter)
     if search:
         orders = orders.filter(
@@ -320,6 +322,7 @@ def orders_view(request):
         'processing': Order.objects.filter(status__in=['paid', 'processing']).count(),
         'shipped': Order.objects.filter(status='shipped').count(),
         'delivered': Order.objects.filter(status='delivered').count(),
+        'refund_pending': RefundRequest.objects.filter(status=RefundRequest.Status.PENDING).count(),
     }
 
     return render(request, 'dashboard/orders.html', {
