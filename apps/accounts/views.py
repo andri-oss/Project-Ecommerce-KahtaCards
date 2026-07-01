@@ -48,7 +48,7 @@ def login_view(request):
         next_url = request.GET.get('next', '')
         if next_url:
             return redirect(next_url)
-        elif request.user.is_admin:
+        elif request.user.is_admin or request.user.is_staff_employee:
             return redirect('/dashboard/')
         else:
             return redirect('/')
@@ -69,7 +69,7 @@ def login_view(request):
                 next_url = request.GET.get('next', '')
                 if next_url:
                     return redirect(next_url)
-                elif user.is_admin:
+                elif user.is_admin or user.is_staff_employee:
                     return redirect('/dashboard/')
                 else:
                     return redirect('/')

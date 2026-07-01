@@ -1,0 +1,109 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}{% if employee %}Edit Pegawai{% else %}Tambah Pegawai{% endif %}{% endblock %}
+
+{% block content %}
+{% with active_page='employees' %}{% endwith %}
+
+<div class="adm-page-header">
+  <a href="{% url 'dashboard:employees' %}" class="adm-link" style="font-size:13px;">← Kembali ke Daftar Pegawai</a>
+  <div class="adm-page-title" style="margin-top:6px;">
+    {% if employee %}Edit Pegawai: {{ employee.username }}{% else %}Tambah Pegawai Baru{% endif %}
+  </div>
+</div>
+
+<div style="max-width:640px;">
+  <div class="adm-detail-card">
+    {% if error %}
+    <div style="background:#ffebee;color:#c62828;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;font-weight:600;">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% if not employee %}
+      <div class="pf-field">
+        <label class="pf-label" for="empUsername">Username <span class="pf-required">*</span></label>
+        <input type="text" class="pf-input" id="empUsername" name="username" value="{{ form_data.username }}" required>
+      </div>
+      {% endif %}
+
+      <div class="pf-field">
+        <label class="pf-label" for="empEmail">Email</label>
+        <input type="email" class="pf-input" id="empEmail" name="email" value="{{ employee.email|default:form_data.email }}">
+      </div>
+
+      <div style="display:flex;gap:16px;">
+        <div class="pf-field" style="flex:1;">
+          <label class="pf-label" for="empFirstName">Nama Depan</label>
+          <input type="text" class="pf-input" id="empFirstName" name="first_name" value="{{ employee.first_name|default:form_data.first_name }}">
+        </div>
+        <div class="pf-field" style="flex:1;">
+          <label class="pf-label" for="empLastName">Nama Belakang</label>
+          <input type="text" class="pf-input" id="empLastName" name="last_name" value="{{ employee.last_name|default:form_data.last_name }}">
+        </div>
+      </div>
+
+      <div class="pf-field">
+        <label class="pf-label" for="empPassword">
+          Password {% if employee %}<span style="font-weight:400;text-transform:none;">(kosongkan jika tidak diubah)</span>{% else %}<span class="pf-required">*</span>{% endif %}
+        </label>
+        <input type="password" class="pf-input" id="empPassword" name="password" {% if not employee %}required{% endif %}>
+      </div>
+
+      {% if employee %}
+      <div class="pf-field" style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="empIsActive" name="is_active" {% if employee.is_active %}checked{% endif %} style="width:16px;height:16px;">
+        <label class="pf-label" for="empIsActive" style="margin:0;">Akun Aktif</label>
+      </div>
+      {% endif %}
+
+      <div class="pf-field">
+        <label class="pf-label">Akses Menu Dashboard</label>
+        <p style="font-size:12px;color:#8a7060;margin:0 0 10px;">Pilih menu yang boleh diakses pegawai ini. Menu yang tidak dicentang akan disembunyikan dan diblokir.</p>
+        <div class="pf-menu-matrix">
+          {% for key, label in menus %}
+          <label class="pf-menu-option">
+            <input type="checkbox" name="menu_access" value="{{ key }}" {% if employee and key in employee.menu_access %}checked{% endif %}>
+            {{ label }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button type="submit" class="adm-btn adm-btn-primary" style="flex:1;justify-content:center;padding:12px;border-radius:10px;">
+          {% if employee %}Simpan Perubahan{% else %}Buat Akun Pegawai{% endif %}
+        </button>
+        <a href="{% url 'dashboard:employees' %}" class="adm-btn" style="flex:1;justify-content:center;padding:12px;border-radius:10px;">
+          Batal
+        </a>
+      </div>
+    </form>
+  </div>
+
+  {% if employee %}
+  <div class="adm-detail-card" style="margin-top:16px;border:1px solid #f0c4c4;">
+    <div class="adm-detail-title">Hapus Akun</div>
+    <p style="font-size:13px;color:#8a7060;margin-bottom:12px;">Menghapus akun pegawai bersifat permanen dan tidak dapat dibatalkan.</p>
+    <form method="post" action="{% url 'dashboard:employee_delete' employee.pk %}" onsubmit="return confirm('Hapus akun pegawai ini secara permanen?');">
+      {% csrf_token %}
+      <button type="submit" class="adm-btn" style="color:#c62828;border-color:#f0c4c4;">Hapus Akun Pegawai</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.pf-field { margin-bottom: 16px; }
+.pf-label { display: block; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #8a7060; margin-bottom: 6px; }
+.pf-required { color: #c62828; }
+.pf-input { width: 100%; padding: 10px 14px; border: 1.5px solid #e8e0d5; border-radius: 10px; font-family: inherit; font-size: 14px; color: #1e140a; background: #fff; outline: none; transition: border-color .2s; box-sizing: border-box; }
+.pf-input:focus { border-color: #c08b3a; }
+.pf-menu-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pf-menu-option { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1.5px solid #e8e0d5; border-radius: 10px; font-size: 13px; font-weight: 600; color: #4a3b32; cursor: pointer; }
+.pf-menu-option input { width: 16px; height: 16px; }
+</style>
+{% endblock %}

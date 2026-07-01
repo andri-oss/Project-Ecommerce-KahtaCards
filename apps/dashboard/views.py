@@ -1,7 +1,6 @@
 import csv
 
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum, Count, Q
@@ -12,6 +11,7 @@ from apps.orders.models import Order, OrderItem, RefundRequest
 from apps.catalog.models import Product, Category
 from apps.accounts.models import User
 from apps.payments.models import Payment
+from .access import dashboard_access_required, admin_only_required, MENUS
 
 PAID_STATUSES = ['paid', 'processing', 'shipped', 'delivered']
 
@@ -31,7 +31,7 @@ def _reports_queryset(request):
     return orders, start_date, end_date
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required()
 def dashboard_view(request):
     """Admin overview — stats cards, revenue chart, recent orders."""
     today = timezone.now().date()
@@ -83,7 +83,7 @@ def dashboard_view(request):
     return render(request, 'dashboard/index.html', context)
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('products')
 def products_view(request):
     """Product management list."""
     search = request.GET.get('q', '')
@@ -110,7 +110,7 @@ def products_view(request):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('products')
 def product_add_view(request):
     """Add a new product."""
     categories = Category.objects.all()
@@ -162,7 +162,7 @@ def product_add_view(request):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('products')
 def product_edit_view(request, pk):
     """Edit an existing product."""
     product = get_object_or_404(Product, pk=pk)
@@ -207,7 +207,7 @@ def product_edit_view(request, pk):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('products')
 def product_toggle_view(request, pk):
     """Toggle product active status (AJAX)."""
     if request.method == 'POST':
@@ -221,7 +221,7 @@ def product_toggle_view(request, pk):
     return JsonResponse({'success': False}, status=400)
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('products')
 def product_delete_view(request, pk):
     """Delete a product."""
     product = get_object_or_404(Product, pk=pk)
@@ -233,7 +233,7 @@ def product_delete_view(request, pk):
     return redirect('dashboard:products')
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('categories')
 def categories_view(request):
     """Category management — list + inline add."""
     from django.utils.text import slugify
@@ -266,7 +266,7 @@ def categories_view(request):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('categories')
 def category_edit_view(request, pk):
     """Edit a category."""
     from django.utils.text import slugify
@@ -295,7 +295,7 @@ def category_edit_view(request, pk):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('categories')
 def category_delete_view(request, pk):
     """Delete a category (AJAX)."""
     category = get_object_or_404(Category, pk=pk)
@@ -313,7 +313,7 @@ def category_delete_view(request, pk):
     return redirect('dashboard:categories')
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('orders')
 def orders_view(request):
     """Order management list with filters."""
     status_filter = request.GET.get('status', '')
@@ -352,7 +352,7 @@ def orders_view(request):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('orders')
 def order_detail_view(request, pk):
     """Single order detail with update capability."""
     order = get_object_or_404(Order.objects.select_related('user'), pk=pk)
@@ -377,7 +377,7 @@ def order_detail_view(request, pk):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('orders')
 def order_update_status(request, pk):
     """AJAX: update order status."""
     if request.method == 'POST':
@@ -400,7 +400,7 @@ def order_update_status(request, pk):
     return JsonResponse({'success': False}, status=400)
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('orders')
 def refund_mark_completed(request, pk):
     """AJAX: mark a customer's refund request as completed after manual bank transfer."""
     if request.method != 'POST':
@@ -420,7 +420,7 @@ def refund_mark_completed(request, pk):
     return JsonResponse({'success': True})
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('customers')
 def customers_view(request):
     """Customer management list."""
     search = request.GET.get('q', '')
@@ -446,7 +446,7 @@ def customers_view(request):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('reports')
 def reports_view(request):
     """Transaction report — order/revenue stats, transaction list, and top customers for a date range."""
     orders, start_date, end_date = _reports_queryset(request)
@@ -475,7 +475,7 @@ def reports_view(request):
     })
 
 
-@staff_member_required(login_url='/auth/login/')
+@dashboard_access_required('reports')
 def reports_export_csv(request):
     """Export the currently filtered transaction report as CSV."""
     orders, start_date, end_date = _reports_queryset(request)
@@ -497,3 +497,109 @@ def reports_export_csv(request):
         ])
 
     return response
+
+
+@admin_only_required
+def employees_view(request):
+    """List staff/employee accounts — admin-only so staff can't manage their own access."""
+    search = request.GET.get('q', '')
+    employees = User.objects.filter(role=User.Role.STAFF).order_by('-date_joined')
+
+    if search:
+        employees = employees.filter(
+            Q(username__icontains=search) |
+            Q(email__icontains=search) |
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search)
+        )
+
+    paginator = Paginator(employees, 10)
+    page = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'dashboard/employees.html', {
+        'page_obj': page,
+        'search': search,
+        'menus': MENUS,
+    })
+
+
+@admin_only_required
+def employee_add_view(request):
+    """Create a new staff/employee account with a chosen menu_access set."""
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        menu_access = request.POST.getlist('menu_access')
+
+        error = None
+        if not username or not password:
+            error = 'Username dan password wajib diisi.'
+        elif User.objects.filter(username=username).exists():
+            error = 'Username sudah digunakan.'
+
+        if error:
+            return render(request, 'dashboard/employee_form.html', {
+                'error': error,
+                'menus': MENUS,
+                'form_data': request.POST,
+            })
+
+        employee = User(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            role=User.Role.STAFF,
+            is_staff=True,
+            is_active=True,
+            menu_access=[m for m in menu_access if m in dict(MENUS)],
+        )
+        employee.set_password(password)
+        employee.save()
+        return redirect('dashboard:employees')
+
+    return render(request, 'dashboard/employee_form.html', {
+        'menus': MENUS,
+    })
+
+
+@admin_only_required
+def employee_edit_view(request, pk):
+    """Edit a staff/employee account's profile, password, and per-menu access."""
+    employee = get_object_or_404(User, pk=pk, role=User.Role.STAFF)
+
+    if request.method == 'POST':
+        employee.email = request.POST.get('email', '').strip()
+        employee.first_name = request.POST.get('first_name', '').strip()
+        employee.last_name = request.POST.get('last_name', '').strip()
+        employee.is_active = request.POST.get('is_active') == 'on'
+
+        menu_access = request.POST.getlist('menu_access')
+        employee.menu_access = [m for m in menu_access if m in dict(MENUS)]
+
+        new_password = request.POST.get('password', '')
+        if new_password:
+            employee.set_password(new_password)
+
+        employee.save()
+        return redirect('dashboard:employees')
+
+    return render(request, 'dashboard/employee_form.html', {
+        'employee': employee,
+        'menus': MENUS,
+    })
+
+
+@admin_only_required
+def employee_delete_view(request, pk):
+    """Delete a staff/employee account."""
+    employee = get_object_or_404(User, pk=pk, role=User.Role.STAFF)
+    if request.method == 'POST':
+        employee.delete()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+        return redirect('dashboard:employees')
+    return redirect('dashboard:employees')

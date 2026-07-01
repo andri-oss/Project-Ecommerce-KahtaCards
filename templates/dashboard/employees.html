@@ -1,0 +1,95 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Kelola Pegawai{% endblock %}
+
+{% block content %}
+{% with active_page='employees' %}{% endwith %}
+
+<div class="adm-page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <div class="adm-page-subtitle">Manajemen Atelier</div>
+    <div class="adm-page-title">Kelola Pegawai</div>
+    <p class="adm-page-desc">Tambah akun pegawai dan atur menu dashboard yang bisa mereka akses.</p>
+  </div>
+  <a href="{% url 'dashboard:employee_add' %}" class="adm-btn adm-btn-primary">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Tambah Pegawai
+  </a>
+</div>
+
+<div class="adm-table-wrap">
+  <div class="adm-table-toolbar">
+    <form class="adm-search" method="get" style="max-width:360px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Cari pegawai...">
+    </form>
+  </div>
+
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Pegawai</th>
+        <th>Email</th>
+        <th>Akses Menu</th>
+        <th>Status</th>
+        <th>Terdaftar</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for employee in page_obj %}
+      <tr>
+        <td>
+          <div class="adm-user-cell">
+            <div class="adm-avatar adm-avatar-{% cycle 'amber' 'dark' 'brown' %}">{{ employee.username|make_list|first|upper }}</div>
+            <div>
+              <div style="font-weight:600;">{{ employee.get_full_name|default:employee.username }}</div>
+              <div style="font-size:11px;color:#8a7060;">@{{ employee.username }}</div>
+            </div>
+          </div>
+        </td>
+        <td>{{ employee.email|default:"—" }}</td>
+        <td>
+          {% for key, label in menus %}
+            {% if key in employee.menu_access %}
+            <span class="adm-badge adm-badge-active" style="margin:2px;">{{ label }}</span>
+            {% endif %}
+          {% endfor %}
+          {% if not employee.menu_access %}
+          <span style="color:#8a7060;font-size:12px;">Belum ada akses</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if employee.is_active %}
+          <span class="adm-badge adm-badge-active">Aktif</span>
+          {% else %}
+          <span class="adm-badge adm-badge-inactive">Nonaktif</span>
+          {% endif %}
+        </td>
+        <td>{{ employee.date_joined|date:"d M Y" }}</td>
+        <td><a href="{% url 'dashboard:employee_edit' employee.pk %}" class="adm-link">Edit →</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:#8a7060;padding:32px;">Belum ada pegawai. Klik "Tambah Pegawai" untuk membuat akun.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="adm-table-footer">
+    <span>Menampilkan {{ page_obj.start_index|default:0 }}-{{ page_obj.end_index|default:0 }} dari {{ page_obj.paginator.count }} pegawai</span>
+    <div class="adm-pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ search }}" class="adm-page-link">‹</a>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+          <a href="?page={{ num }}&q={{ search }}" class="adm-page-link {% if num == page_obj.number %}active{% endif %}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&q={{ search }}" class="adm-page-link">›</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

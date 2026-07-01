@@ -20,4 +20,8 @@ urlpatterns = [
     path('customers/', views.customers_view, name='customers'),
     path('reports/', views.reports_view, name='reports'),
     path('reports/export/', views.reports_export_csv, name='reports_export_csv'),
+    path('employees/', views.employees_view, name='employees'),
+    path('employees/add/', views.employee_add_view, name='employee_add'),
+    path('employees/<int:pk>/edit/', views.employee_edit_view, name='employee_edit'),
+    path('employees/<int:pk>/delete/', views.employee_delete_view, name='employee_delete'),
 ]
