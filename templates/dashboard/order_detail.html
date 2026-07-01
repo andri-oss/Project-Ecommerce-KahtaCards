@@ -173,6 +173,78 @@
 
 </div>
 
+{# ── Tracking Number Modal ───────────────────────────────── #}
+<div id="trackingModal" class="adm-modal-overlay">
+  <div class="adm-modal">
+    <div class="adm-modal-header">
+      <h3 class="adm-modal-title">Masukkan Nomor Resi</h3>
+      <button class="adm-modal-close" onclick="closeTrackingModal()">&times;</button>
+    </div>
+    <div class="adm-modal-body">
+      <p style="margin-bottom: 12px; font-size: 13px; color: #5c5347;">Pesanan ini akan diubah statusnya menjadi <strong style="color:var(--color-primary);">Dikirim</strong>. Silakan masukkan nomor resi pengiriman agar pembeli dapat melacak paketnya.</p>
+      <input type="text" id="trackingInput" class="adm-input" placeholder="Contoh: JNE1234567890" style="width: 100%; padding: 10px; border: 1px solid #e8e0d5; border-radius: 6px; font-family: inherit;">
+    </div>
+    <div class="adm-modal-footer" style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+      <button class="adm-btn" onclick="closeTrackingModal()" style="border:1px solid #e8e0d5;">Batal</button>
+      <button class="adm-btn-update" id="submitTrackingBtn" style="padding: 8px 16px; width: auto; margin-top: 0;">Simpan & Update</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .adm-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+  }
+  .adm-modal-overlay.show {
+    display: flex;
+  }
+  .adm-modal {
+    background: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes modalPop {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .adm-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .adm-modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #4a3b32;
+    margin: 0;
+  }
+  .adm-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #8a7060;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .adm-modal-close:hover { color: #4a3b32; }
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -180,6 +252,10 @@
 (function() {
   const btn = document.getElementById('updateStatusBtn');
   const sel = document.getElementById('statusSelect');
+  const trackingModal = document.getElementById('trackingModal');
+  const trackingInput = document.getElementById('trackingInput');
+  const submitTrackingBtn = document.getElementById('submitTrackingBtn');
+
   if (!btn || !sel) return;
 
   function getCookie(name) {
@@ -187,23 +263,13 @@
     return v ? v.pop() : '';
   }
 
-  btn.addEventListener('click', function() {
-    const selectedStatus = sel.value;
-    let payload = { status: selectedStatus };
-    const shippingMethod = '{{ order.shipping_method }}';
+  window.closeTrackingModal = function() {
+    trackingModal.classList.remove('show');
+    sel.value = '{{ order.status }}';
+  };
 
-    if (selectedStatus === 'shipped' && shippingMethod === 'delivery') {
-      const tracking = prompt("Silakan masukkan Nomor Resi pengiriman:");
-      if (tracking === null) return; // cancelled
-      if (tracking.trim() !== "") {
-        payload.tracking_number = tracking.trim();
-      } else {
-        alert("Nomor resi tidak boleh kosong untuk pesanan yang dikirim.");
-        return;
-      }
-    }
-
-    fetch('/dashboard/orders/' + this.dataset.orderPk + '/update-status/', {
+  function executeStatusUpdate(payload) {
+    fetch('/dashboard/orders/' + btn.dataset.orderPk + '/update-status/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -216,12 +282,39 @@
       if (data.success) {
         btn.textContent = '✓ Updated!';
         btn.style.background = '#2e7d32';
+        if (trackingModal) trackingModal.classList.remove('show');
         setTimeout(() => location.reload(), 800);
       } else {
         alert("Gagal mengupdate status.");
       }
     });
+  }
+
+  btn.addEventListener('click', function() {
+    const selectedStatus = sel.value;
+    let payload = { status: selectedStatus };
+    const shippingMethod = '{{ order.shipping_method }}';
+
+    if (selectedStatus === 'shipped' && shippingMethod === 'delivery') {
+      trackingModal.classList.add('show');
+      trackingInput.value = '';
+      trackingInput.focus();
+      return; 
+    }
+
+    executeStatusUpdate(payload);
   });
+
+  if (submitTrackingBtn) {
+    submitTrackingBtn.addEventListener('click', function() {
+      const tracking = trackingInput.value.trim();
+      if (tracking === "") {
+        alert("Nomor resi tidak boleh kosong untuk pesanan yang dikirim.");
+        return;
+      }
+      executeStatusUpdate({ status: 'shipped', tracking_number: tracking });
+    });
+  }
 })();
 </script>
 {% endblock %}
