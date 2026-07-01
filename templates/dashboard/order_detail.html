@@ -160,12 +160,25 @@
       <div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a7060;margin-bottom:16px;">Ubah Status Pesanan</div>
       
       <div class="adm-status-options" id="statusOptions">
-        <div class="adm-status-option {% if order.status == 'pending' %}active{% endif %}" data-value="pending">Menunggu<br>Pembayaran</div>
-        <div class="adm-status-option {% if order.status == 'paid' %}active{% endif %}" data-value="paid">Sudah<br>Dibayar</div>
-        <div class="adm-status-option {% if order.status == 'processing' %}active{% endif %}" data-value="processing">Sedang<br>Diproses</div>
-        <div class="adm-status-option {% if order.status == 'shipped' %}active{% endif %}" data-value="shipped">Sedang<br>Dikirim</div>
-        <div class="adm-status-option {% if order.status == 'delivered' %}active{% endif %}" style="grid-column: span 2;" data-value="delivered">Pesanan Selesai</div>
-        <div class="adm-status-option cancelled {% if order.status == 'cancelled' %}active{% endif %}" data-value="cancelled">Dibatalkan</div>
+        <!-- Pending -->
+        <div class="adm-status-option {% if order.status == 'pending' %}current{% else %}past{% endif %}" data-value="pending">Menunggu<br>Pembayaran</div>
+          
+        <!-- Paid -->
+        <div class="adm-status-option {% if order.status == 'pending' %}future{% elif order.status == 'paid' %}current{% else %}past{% endif %}" data-value="paid">Sudah<br>Dibayar</div>
+          
+        {% if order.shipping_method == 'delivery' %}
+        <!-- Processing -->
+        <div class="adm-status-option {% if order.status == 'paid' %}available{% elif order.status == 'pending' %}future{% elif order.status == 'processing' %}current{% else %}past{% endif %}" data-value="processing">Sedang<br>Diproses</div>
+          
+        <!-- Shipped -->
+        <div class="adm-status-option {% if order.status == 'processing' %}available{% elif order.status in 'pending,paid' %}future{% elif order.status == 'shipped' %}current{% else %}past{% endif %}" data-value="shipped">Sedang<br>Dikirim</div>
+        {% endif %}
+          
+        <!-- Delivered -->
+        <div class="adm-status-option {% if order.shipping_method == 'pickup' %}{% if order.status in 'pending,paid' %}available{% elif order.status == 'delivered' %}current{% else %}past{% endif %}{% else %}{% if order.status == 'shipped' %}available{% elif order.status in 'pending,paid,processing' %}future{% elif order.status == 'delivered' %}current{% else %}past{% endif %}{% endif %}" style="grid-column: span 2;" data-value="delivered">Pesanan Selesai</div>
+
+        <!-- Cancelled -->
+        <div class="adm-status-option cancelled {% if order.status == 'cancelled' %}current{% elif order.status == 'delivered' %}past{% else %}available{% endif %}" data-value="cancelled">Dibatalkan</div>
       </div>
       
       <input type="hidden" id="statusSelect" value="{{ order.status }}">
@@ -335,29 +348,62 @@
     justify-content: center;
     line-height: 1.3;
   }
-  .adm-status-option:hover {
-    border-color: var(--color-primary, #c08b3a);
-    background: #fdfaf6;
-    color: var(--color-primary, #c08b3a);
+  /* PAST: completed steps */
+  .adm-status-option.past {
+    background: #f7f5f2;
+    color: #b5a89f;
+    border-color: #e8e0d5;
+    pointer-events: none;
+    opacity: 0.7;
   }
-  .adm-status-option.active {
+  
+  /* CURRENT: the current active status */
+  .adm-status-option.current {
     background: var(--color-primary, #c08b3a);
     color: #fff;
     border-color: var(--color-primary, #c08b3a);
     box-shadow: 0 4px 12px rgba(192, 139, 58, 0.2);
+    pointer-events: none;
   }
-  .adm-status-option.cancelled {
-    grid-column: span 2;
-  }
-  .adm-status-option.cancelled.active {
+  .adm-status-option.current.cancelled {
     background: #d32f2f;
     border-color: #d32f2f;
     box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
   }
-  .adm-status-option.cancelled:hover:not(.active) {
+  
+  /* FUTURE: steps not yet reachable */
+  .adm-status-option.future {
+    background: #fff;
+    color: #d1c8c1;
+    border: 1px dashed #e8e0d5;
+    pointer-events: none;
+  }
+  
+  /* AVAILABLE: steps the admin can click to advance */
+  .adm-status-option.available {
+    background: #fff;
+    color: #8a7060;
+    border: 1px solid #c08b3a;
+    cursor: pointer;
+  }
+  .adm-status-option.available:hover, .adm-status-option.available.selected {
+    background: #fdfaf6;
+    color: #c08b3a;
+    box-shadow: 0 0 0 1px #c08b3a;
+  }
+  
+  /* Cancelled specific */
+  .adm-status-option.cancelled {
+    grid-column: span 2;
+  }
+  .adm-status-option.cancelled.available {
     border-color: #d32f2f;
     color: #d32f2f;
+  }
+  .adm-status-option.cancelled.available:hover, .adm-status-option.cancelled.available.selected {
     background: #fff5f5;
+    color: #d32f2f;
+    box-shadow: 0 0 0 1px #d32f2f;
   }
 </style>
 {% endblock %}
@@ -378,19 +424,15 @@
     return v ? v.pop() : '';
   }
 
-  const statusOptions = document.querySelectorAll('.adm-status-option');
+  const statusOptions = document.querySelectorAll('.adm-status-option.available');
   const initialStatus = '{{ order.status }}';
 
   window.closeTrackingModal = function() {
     trackingModal.classList.remove('show');
     sel.value = initialStatus;
-    statusOptions.forEach(o => {
-      if (o.dataset.value === initialStatus) {
-        o.classList.add('active');
-      } else {
-        o.classList.remove('active');
-      }
-    });
+    if(statusOptions) {
+      statusOptions.forEach(o => o.classList.remove('selected'));
+    }
     btn.style.opacity = '0.5';
     btn.style.pointerEvents = 'none';
   };
@@ -398,17 +440,12 @@
   if (statusOptions.length > 0) {
     statusOptions.forEach(opt => {
       opt.addEventListener('click', function() {
-        statusOptions.forEach(o => o.classList.remove('active'));
-        this.classList.add('active');
+        statusOptions.forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
         sel.value = this.dataset.value;
         
-        if (sel.value !== initialStatus) {
-          btn.style.opacity = '1';
-          btn.style.pointerEvents = 'auto';
-        } else {
-          btn.style.opacity = '0.5';
-          btn.style.pointerEvents = 'none';
-        }
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
       });
     });
   }
