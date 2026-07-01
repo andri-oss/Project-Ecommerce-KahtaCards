@@ -76,6 +76,10 @@ def checkout_shipping(request):
                     design_note=item.design_note or '',
                 )
 
+            # Cart items are now owned by the order — clear the cart so it
+            # doesn't show a duplicate of an order that's already pending payment.
+            cart.items.all().delete()
+
             return redirect('orders:checkout_payment', order_id=order.order_id)
 
     # Pre-fill from user profile
@@ -131,9 +135,6 @@ def checkout_payment(request, order_id):
                 'paid_at': timezone.now(),
             }
         )
-
-        # Clear the user's cart after successful checkout
-        Cart.objects.filter(user=request.user).delete()
 
         return redirect('orders:order_success', order_id=order.order_id)
 
