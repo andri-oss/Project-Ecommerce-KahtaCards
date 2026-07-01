@@ -181,12 +181,12 @@
       <button class="adm-modal-close" onclick="closeTrackingModal()">&times;</button>
     </div>
     <div class="adm-modal-body">
-      <p style="margin-bottom: 12px; font-size: 13px; color: #5c5347;">Pesanan ini akan diubah statusnya menjadi <strong style="color:var(--color-primary);">Dikirim</strong>. Silakan masukkan nomor resi pengiriman agar pembeli dapat melacak paketnya.</p>
-      <input type="text" id="trackingInput" class="adm-input" placeholder="Contoh: JNE1234567890" style="width: 100%; padding: 10px; border: 1px solid #e8e0d5; border-radius: 6px; font-family: inherit;">
+      <p>Pesanan ini akan diubah statusnya menjadi <strong style="color:var(--color-primary, #c08b3a);">Dikirim</strong>. Silakan masukkan nomor resi pengiriman agar pembeli dapat melacak paketnya.</p>
+      <input type="text" id="trackingInput" class="adm-input-resi" placeholder="Contoh: JNE1234567890">
     </div>
-    <div class="adm-modal-footer" style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
-      <button class="adm-btn" onclick="closeTrackingModal()" style="border:1px solid #e8e0d5;">Batal</button>
-      <button class="adm-btn-update" id="submitTrackingBtn" style="padding: 8px 16px; width: auto; margin-top: 0;">Simpan & Update</button>
+    <div class="adm-modal-footer">
+      <button class="adm-btn-modal adm-btn-cancel" onclick="closeTrackingModal()">Batal</button>
+      <button class="adm-btn-modal adm-btn-confirm" id="submitTrackingBtn">Simpan & Update</button>
     </div>
   </div>
 </div>
@@ -210,12 +210,13 @@
   }
   .adm-modal {
     background: #fff;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 400px;
-    padding: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 440px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
     animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-family: 'DM Sans', sans-serif;
   }
   @keyframes modalPop {
     0% { transform: scale(0.9); opacity: 0; }
@@ -225,11 +226,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
   .adm-modal-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.3rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #4a3b32;
     margin: 0;
@@ -242,8 +243,72 @@
     cursor: pointer;
     line-height: 1;
     padding: 0;
+    transition: color 0.2s ease;
   }
   .adm-modal-close:hover { color: #4a3b32; }
+  
+  .adm-modal-body p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #5c5347;
+    margin-bottom: 24px;
+    margin-top: 0;
+  }
+  .adm-input-resi {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e8e0d5;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #4a3b32;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+  .adm-input-resi:focus {
+    border-color: #c08b3a;
+    box-shadow: 0 0 0 3px rgba(192,139,58,0.1);
+  }
+  
+  .adm-modal-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    justify-content: flex-end;
+  }
+  .adm-btn-modal {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .adm-btn-cancel {
+    background: #f7f5f2;
+    color: #8a7060;
+    border: 1px solid #e8e0d5;
+  }
+  .adm-btn-cancel:hover {
+    background: #e8e0d5;
+    color: #4a3b32;
+  }
+  .adm-btn-confirm {
+    background: var(--color-primary, #c08b3a);
+    color: #fff;
+  }
+  .adm-btn-confirm:hover {
+    background: var(--color-primary-dark, #a67632);
+  }
 </style>
 {% endblock %}
 
