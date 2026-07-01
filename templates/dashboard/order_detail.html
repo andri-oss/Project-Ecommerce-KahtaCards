@@ -173,9 +173,18 @@
       <div class="adm-detail-value" style="margin-bottom:12px;">{{ refund_request.reason }}</div>
       {% endif %}
       {% if refund_request.status == 'pending' %}
-      <button type="button" id="refundCompletedBtn" class="adm-btn-update" data-order-pk="{{ order.pk }}" style="width:100%;padding:12px;font-size:13px;border-radius:8px;margin-top:8px;">Tandai Refund Selesai</button>
+      <div class="adm-detail-label">Bukti Transfer</div>
+      <input type="file" id="refundProofInput" accept="image/*" style="margin-bottom:12px;font-size:12px;">
+      <div id="refundProofError" style="display:none;color:#c62828;font-size:12px;margin-bottom:8px;"></div>
+      <button type="button" id="refundCompletedBtn" class="adm-btn-update" data-order-pk="{{ order.pk }}" style="width:100%;padding:12px;font-size:13px;border-radius:8px;">Tandai Refund Selesai</button>
       {% else %}
-      <div style="font-size:12px;color:#8a7060;margin-top:8px;">Diproses pada {{ refund_request.processed_at|date:"d M Y, H:i" }} WIB</div>
+      <div style="font-size:12px;color:#8a7060;margin-bottom:10px;">Diproses pada {{ refund_request.processed_at|date:"d M Y, H:i" }} WIB</div>
+      {% if refund_request.proof_image %}
+      <div class="adm-detail-label">Bukti Transfer</div>
+      <a href="{{ refund_request.proof_image.url }}" target="_blank">
+        <img src="{{ refund_request.proof_image.url }}" alt="Bukti transfer" style="max-width:100%;border-radius:8px;border:1px solid #e8e0d5;">
+      </a>
+      {% endif %}
       {% endif %}
     </div>
     {% endif %}
@@ -585,21 +594,36 @@
   }
 
   const refundBtn = document.getElementById('refundCompletedBtn');
+  const refundProofInput = document.getElementById('refundProofInput');
+  const refundProofError = document.getElementById('refundProofError');
   if (refundBtn) {
     refundBtn.addEventListener('click', function() {
+      const proofFile = refundProofInput.files[0];
+      if (!proofFile) {
+        refundProofError.textContent = 'Bukti transfer wajib diunggah.';
+        refundProofError.style.display = 'block';
+        return;
+      }
+      refundProofError.style.display = 'none';
+
       if (!confirm('Tandai refund ini sebagai selesai? Pastikan Anda sudah mentransfer dana ke rekening customer.')) return;
       refundBtn.disabled = true;
       refundBtn.textContent = 'Memproses...';
+
+      const formData = new FormData();
+      formData.append('proof_image', proofFile);
+
       fetch('/dashboard/orders/' + refundBtn.dataset.orderPk + '/refund-completed/', {
         method: 'POST',
         headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        body: formData,
       })
       .then(r => r.json())
       .then(data => {
         if (data.success) {
           location.reload();
         } else {
-          alert('Gagal menandai refund.');
+          alert(data.error || 'Gagal menandai refund.');
           refundBtn.disabled = false;
           refundBtn.textContent = 'Tandai Refund Selesai';
         }

@@ -53,9 +53,13 @@
                         <div class="order-id">#{{ order.order_id }}</div>
                         <div class="order-date">{{ order.created_at|date:"d M Y, H:i" }}</div>
                     </div>
+                    {% if order.refund_request.status == 'completed' %}
+                    <div class="order-status status-refunded">Dana Dikembalikan</div>
+                    {% else %}
                     <div class="order-status status-{{ order.status }}">
                         {{ order.get_status_display }}
                     </div>
+                    {% endif %}
                 </div>
                 <div class="order-body">
                     <div class="order-summary">

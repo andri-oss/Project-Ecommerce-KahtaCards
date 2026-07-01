@@ -98,6 +98,7 @@
 .status-shipped { background: #f5f5f5; color: #616161; border: 1px solid #e0e0e0; }
 .status-delivered { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
 .status-cancelled { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+.status-refunded { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
 
 .order-body {
     display: flex;
@@ -310,6 +311,67 @@
     color: #b23c3c;
     font-weight: 600;
     font-size: 0.95rem;
+}
+
+.order-refund-info {
+    margin-top: 16px;
+}
+
+.order-refund-status {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.order-refund-status svg {
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.order-refund-status.is-completed {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    color: #1565c0;
+    font-weight: 600;
+}
+
+.order-refund-status.is-pending {
+    background: #fff8e1;
+    border: 1px solid #ffecb3;
+    color: #b78103;
+    font-weight: 600;
+}
+
+.order-refund-proof-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--color-text);
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.order-refund-proof-link:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.order-refund-proof-link img {
+    width: 46px;
+    height: 46px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
 }
 
 @media (max-width: 600px) {

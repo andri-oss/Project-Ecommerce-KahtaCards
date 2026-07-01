@@ -385,9 +385,15 @@ def refund_mark_completed(request, pk):
         return JsonResponse({'success': False}, status=400)
 
     refund = get_object_or_404(RefundRequest, order__pk=pk)
+
+    proof_image = request.FILES.get('proof_image')
+    if not proof_image:
+        return JsonResponse({'success': False, 'error': 'Bukti transfer wajib diunggah.'}, status=400)
+
+    refund.proof_image = proof_image
     refund.status = RefundRequest.Status.COMPLETED
     refund.processed_at = timezone.now()
-    refund.save(update_fields=['status', 'processed_at'])
+    refund.save(update_fields=['proof_image', 'status', 'processed_at'])
 
     return JsonResponse({'success': True})
 

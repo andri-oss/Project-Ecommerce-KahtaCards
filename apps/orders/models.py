@@ -116,6 +116,7 @@ class RefundRequest(models.Model):
     account_holder_name = models.CharField(max_length=150)
     reason = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    proof_image = models.ImageField(upload_to='refund_proofs/', blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(blank=True, null=True)
