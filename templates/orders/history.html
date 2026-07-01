@@ -12,20 +12,36 @@
 <div class="orders-container">
     <div class="orders-header reveal">
         <h1 class="orders-title">Riwayat Pesanan</h1>
-        <form method="get" class="date-filter-form">
-            <div class="filter-group">
-                <label for="start_date">Dari:</label>
-                <input type="date" id="start_date" name="start_date" value="{{ start_date|default:'' }}" class="filter-input">
+        <div class="filter-dropdown-container">
+            <button class="btn btn-outline filter-toggle-btn" onclick="toggleFilter()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                Filter Tanggal
+                {% if start_date or end_date %}
+                    <span class="filter-active-dot"></span>
+                {% endif %}
+            </button>
+            
+            <div class="filter-dropdown-menu" id="filterDropdown">
+                <form method="get" class="date-filter-form-vertical">
+                    <div class="filter-group">
+                        <label for="start_date">Dari Tanggal:</label>
+                        <input type="date" id="start_date" name="start_date" value="{{ start_date|default:'' }}" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="end_date">Sampai Tanggal:</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ end_date|default:'' }}" class="filter-input">
+                    </div>
+                    <div class="filter-actions">
+                        {% if start_date or end_date %}
+                            <a href="{% url 'orders:order_history' %}" class="btn btn-outline" style="flex: 1; text-align: center; padding: 8px;">Reset</a>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary" style="flex: 1; padding: 8px;">Terapkan</button>
+                    </div>
+                </form>
             </div>
-            <div class="filter-group">
-                <label for="end_date">Sampai:</label>
-                <input type="date" id="end_date" name="end_date" value="{{ end_date|default:'' }}" class="filter-input">
-            </div>
-            <button type="submit" class="btn btn-primary filter-btn">Filter</button>
-            {% if start_date or end_date %}
-                <a href="{% url 'orders:order_history' %}" class="btn btn-outline filter-btn">Reset</a>
-            {% endif %}
-        </form>
+        </div>
     </div>
 
     {% if orders %}
@@ -82,4 +98,23 @@
         </div>
     {% endif %}
 </div>
+
+{% block extra_js %}
+<script>
+    function toggleFilter() {
+        const dropdown = document.getElementById('filterDropdown');
+        dropdown.classList.toggle('show');
+    }
+
+    // Close dropdown when clicking outside
+    window.onclick = function(event) {
+        if (!event.target.closest('.filter-dropdown-container')) {
+            const dropdown = document.getElementById('filterDropdown');
+            if (dropdown && dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        }
+    }
+</script>
+{% endblock %}
 {% endblock %}
