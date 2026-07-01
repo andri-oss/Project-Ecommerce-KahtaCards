@@ -563,6 +563,7 @@ def employee_add_view(request):
 
     return render(request, 'dashboard/employee_form.html', {
         'menus': MENUS,
+        'form_data': {},
     })
 
 
