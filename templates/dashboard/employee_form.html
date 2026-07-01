@@ -1,4 +1,5 @@
 {% extends 'dashboard/base_admin.html' %}
+{% load dashboard_access %}
 {% block title %}{% if employee %}Edit Pegawai{% else %}Tambah Pegawai{% endif %}{% endblock %}
 
 {% block content %}
@@ -23,23 +24,23 @@
       {% if not employee %}
       <div class="pf-field">
         <label class="pf-label" for="empUsername">Username <span class="pf-required">*</span></label>
-        <input type="text" class="pf-input" id="empUsername" name="username" value="{{ form_data.username }}" required>
+        <input type="text" class="pf-input" id="empUsername" name="username" value="{{ form_data|get_item:'username' }}" required>
       </div>
       {% endif %}
 
       <div class="pf-field">
         <label class="pf-label" for="empEmail">Email</label>
-        <input type="email" class="pf-input" id="empEmail" name="email" value="{{ employee.email|default:form_data.email }}">
+        <input type="email" class="pf-input" id="empEmail" name="email" value="{% if employee %}{{ employee.email }}{% else %}{{ form_data|get_item:'email' }}{% endif %}">
       </div>
 
       <div style="display:flex;gap:16px;">
         <div class="pf-field" style="flex:1;">
           <label class="pf-label" for="empFirstName">Nama Depan</label>
-          <input type="text" class="pf-input" id="empFirstName" name="first_name" value="{{ employee.first_name|default:form_data.first_name }}">
+          <input type="text" class="pf-input" id="empFirstName" name="first_name" value="{% if employee %}{{ employee.first_name }}{% else %}{{ form_data|get_item:'first_name' }}{% endif %}">
         </div>
         <div class="pf-field" style="flex:1;">
           <label class="pf-label" for="empLastName">Nama Belakang</label>
-          <input type="text" class="pf-input" id="empLastName" name="last_name" value="{{ employee.last_name|default:form_data.last_name }}">
+          <input type="text" class="pf-input" id="empLastName" name="last_name" value="{% if employee %}{{ employee.last_name }}{% else %}{{ form_data|get_item:'last_name' }}{% endif %}">
         </div>
       </div>
 
