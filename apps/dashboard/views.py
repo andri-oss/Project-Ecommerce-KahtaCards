@@ -345,6 +345,7 @@ def order_detail_view(request, pk):
         'order': order,
         'items': items,
         'payment': payment,
+        'allowed_next_statuses': order.get_allowed_next_statuses(),
     })
 
 
@@ -357,8 +358,8 @@ def order_update_status(request, pk):
         data = json.loads(request.body)
         new_status = data.get('status')
         tracking_number = data.get('tracking_number')
-        
-        if new_status in dict(Order.Status.choices):
+
+        if new_status in order.get_allowed_next_statuses():
             order.status = new_status
             if tracking_number:
                 order.tracking_number = tracking_number

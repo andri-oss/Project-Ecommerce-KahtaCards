@@ -53,6 +53,20 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_allowed_next_statuses(self):
+        """Statuses an admin is allowed to move this order to, given its current status and shipping method."""
+        if self.status in (self.Status.PENDING, self.Status.PAID, self.Status.DELIVERED, self.Status.CANCELLED):
+            if self.status == self.Status.PAID:
+                if self.shipping_method == self.ShippingMethod.PICKUP:
+                    return [self.Status.DELIVERED, self.Status.CANCELLED]
+                return [self.Status.PROCESSING, self.Status.CANCELLED]
+            return []
+        if self.status == self.Status.PROCESSING:
+            return [self.Status.SHIPPED, self.Status.CANCELLED]
+        if self.status == self.Status.SHIPPED:
+            return [self.Status.DELIVERED, self.Status.CANCELLED]
+        return []
+
     def save(self, *args, **kwargs):
         if not self.order_id:
             from django.utils import timezone

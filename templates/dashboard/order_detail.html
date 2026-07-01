@@ -160,25 +160,25 @@
       <div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a7060;margin-bottom:16px;">Ubah Status Pesanan</div>
       
       <div class="adm-status-options" id="statusOptions">
-        <!-- Pending -->
+        <!-- Pending: locked, never editable by admin -->
         <div class="adm-status-option {% if order.status == 'pending' %}current{% else %}past{% endif %}" data-value="pending">Menunggu<br>Pembayaran</div>
-          
-        <!-- Paid -->
+
+        <!-- Paid: locked, never editable by admin -->
         <div class="adm-status-option {% if order.status == 'pending' %}future{% elif order.status == 'paid' %}current{% else %}past{% endif %}" data-value="paid">Sudah<br>Dibayar</div>
-          
+
         {% if order.shipping_method == 'delivery' %}
         <!-- Processing -->
-        <div class="adm-status-option {% if order.status == 'paid' %}available{% elif order.status == 'pending' %}future{% elif order.status == 'processing' %}current{% else %}past{% endif %}" data-value="processing">Sedang<br>Diproses</div>
-          
+        <div class="adm-status-option {% if 'processing' in allowed_next_statuses %}available{% elif order.status in 'pending,paid' %}future{% elif order.status == 'processing' %}current{% else %}past{% endif %}" data-value="processing">Sedang<br>Diproses</div>
+
         <!-- Shipped -->
-        <div class="adm-status-option {% if order.status == 'processing' %}available{% elif order.status in 'pending,paid' %}future{% elif order.status == 'shipped' %}current{% else %}past{% endif %}" data-value="shipped">Sedang<br>Dikirim</div>
+        <div class="adm-status-option {% if 'shipped' in allowed_next_statuses %}available{% elif order.status in 'pending,paid,processing' %}future{% elif order.status == 'shipped' %}current{% else %}past{% endif %}" data-value="shipped">Sedang<br>Dikirim</div>
         {% endif %}
-          
+
         <!-- Delivered -->
-        <div class="adm-status-option {% if order.shipping_method == 'pickup' %}{% if order.status in 'pending,paid' %}available{% elif order.status == 'delivered' %}current{% else %}past{% endif %}{% else %}{% if order.status == 'shipped' %}available{% elif order.status in 'pending,paid,processing' %}future{% elif order.status == 'delivered' %}current{% else %}past{% endif %}{% endif %}" style="grid-column: span 2;" data-value="delivered">Pesanan Selesai</div>
+        <div class="adm-status-option {% if 'delivered' in allowed_next_statuses %}available{% elif order.status == 'delivered' %}current{% elif order.status == 'cancelled' %}past{% else %}future{% endif %}" style="grid-column: span 2;" data-value="delivered">Pesanan Selesai</div>
 
         <!-- Cancelled -->
-        <div class="adm-status-option cancelled {% if order.status == 'cancelled' %}current{% elif order.status == 'delivered' %}past{% else %}available{% endif %}" data-value="cancelled">Dibatalkan</div>
+        <div class="adm-status-option cancelled {% if order.status == 'cancelled' %}current{% elif 'cancelled' in allowed_next_statuses %}available{% else %}past{% endif %}" data-value="cancelled">Dibatalkan</div>
       </div>
       
       <input type="hidden" id="statusSelect" value="{{ order.status }}">
