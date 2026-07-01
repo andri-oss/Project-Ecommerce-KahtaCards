@@ -1,0 +1,138 @@
+{% extends 'dashboard/base_admin.html' %}
+{% load currency_tags %}
+{% block title %}Laporan Transaksi{% endblock %}
+
+{% block content %}
+{% with active_page='reports' %}{% endwith %}
+
+<div class="adm-page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <div class="adm-page-subtitle">Manajemen Atelier</div>
+    <div class="adm-page-title">Laporan Transaksi</div>
+  </div>
+  <a href="{% url 'dashboard:reports_export_csv' %}?start_date={{ start_date }}&end_date={{ end_date }}" class="adm-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Ekspor CSV
+  </a>
+</div>
+
+{# ── Date Filter ─────────────────────────────────────────── #}
+<div class="adm-table-wrap" style="margin-bottom:24px;">
+  <form method="get" style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;padding:20px 24px;">
+    <div>
+      <div class="adm-detail-label">Dari Tanggal</div>
+      <input type="date" name="start_date" value="{{ start_date }}" class="pf-input" style="margin-top:6px;">
+    </div>
+    <div>
+      <div class="adm-detail-label">Sampai Tanggal</div>
+      <input type="date" name="end_date" value="{{ end_date }}" class="pf-input" style="margin-top:6px;">
+    </div>
+    <button type="submit" class="adm-btn adm-btn-primary">Terapkan</button>
+    {% if start_date or end_date %}
+    <a href="{% url 'dashboard:reports' %}" class="adm-btn">Reset</a>
+    {% endif %}
+  </form>
+</div>
+
+{# ── Stats Cards ──────────────────────────────────────────── #}
+<div class="adm-summary-row">
+  <div class="adm-summary-card">
+    <div class="adm-summary-label">Total Pesanan</div>
+    <div class="adm-summary-value">{{ total_orders }}</div>
+  </div>
+  <div class="adm-summary-card">
+    <div class="adm-summary-label">Total Pendapatan</div>
+    <div class="adm-summary-value">{{ total_revenue|rupiah }}</div>
+  </div>
+  <div class="adm-summary-card">
+    <div class="adm-summary-label">Rata-rata Nilai Pesanan</div>
+    <div class="adm-summary-value">{{ avg_order_value|rupiah }}</div>
+  </div>
+</div>
+
+{# ── Top Customers ────────────────────────────────────────── #}
+<div class="adm-table-wrap" style="margin-top:24px;">
+  <div class="adm-table-toolbar">
+    <div class="adm-detail-title" style="margin:0;">Pelanggan Teratas</div>
+  </div>
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Pelanggan</th>
+        <th>Jumlah Pesanan</th>
+        <th>Total Belanja</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in top_customers %}
+      <tr>
+        <td>
+          <div class="adm-user-cell">
+            <div class="adm-avatar adm-avatar-{% cycle 'amber' 'dark' 'brown' %}">{{ customer.user__username|make_list|first|upper }}</div>
+            {{ customer.user__first_name|default:customer.user__username }} {{ customer.user__last_name }}
+          </div>
+        </td>
+        <td><strong>{{ customer.order_count }}</strong></td>
+        <td>{{ customer.total_spent|rupiah }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" style="text-align:center;color:#8a7060;padding:32px;">Belum ada transaksi pada rentang ini</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ── Transaction List ────────────────────────────────────── #}
+<div class="adm-table-wrap" style="margin-top:24px;">
+  <div class="adm-table-toolbar">
+    <div class="adm-detail-title" style="margin:0;">Daftar Transaksi</div>
+  </div>
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>No. Pesanan</th>
+        <th>Pelanggan</th>
+        <th>Tanggal</th>
+        <th>Status</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in page_obj %}
+      <tr>
+        <td><strong>#{{ order.order_id }}</strong></td>
+        <td>
+          <div class="adm-user-cell">
+            <div class="adm-avatar adm-avatar-{% cycle 'amber' 'dark' 'brown' %}">{{ order.user.username|make_list|first|upper }}</div>
+            {{ order.recipient_name|default:order.user.username }}
+          </div>
+        </td>
+        <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
+        <td><span class="adm-badge adm-badge-{{ order.status }}">{{ order.get_status_display }}</span></td>
+        <td><strong>{{ order.total|rupiah }}</strong></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;color:#8a7060;padding:32px;">Tidak ada transaksi pada rentang ini</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="adm-table-footer">
+    <span>Menampilkan {{ page_obj.start_index|default:0 }}-{{ page_obj.end_index|default:0 }} dari {{ page_obj.paginator.count }} transaksi</span>
+    <div class="adm-pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}" class="adm-page-link">‹</a>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+          <a href="?page={{ num }}&start_date={{ start_date }}&end_date={{ end_date }}" class="adm-page-link {% if num == page_obj.number %}active{% endif %}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}" class="adm-page-link">›</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

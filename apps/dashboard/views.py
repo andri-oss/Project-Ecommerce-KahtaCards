@@ -1,7 +1,9 @@
+import csv
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from datetime import timedelta
@@ -10,6 +12,23 @@ from apps.orders.models import Order, OrderItem, RefundRequest
 from apps.catalog.models import Product, Category
 from apps.accounts.models import User
 from apps.payments.models import Payment
+
+PAID_STATUSES = ['paid', 'processing', 'shipped', 'delivered']
+
+
+def _reports_queryset(request):
+    """Shared date-filtered, paid-orders queryset for the transaction report + its CSV export."""
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+
+    orders = Order.objects.select_related('user').filter(status__in=PAID_STATUSES).order_by('-created_at')
+
+    if start_date:
+        orders = orders.filter(created_at__date__gte=start_date)
+    if end_date:
+        orders = orders.filter(created_at__date__lte=end_date)
+
+    return orders, start_date, end_date
 
 
 @staff_member_required(login_url='/auth/login/')
@@ -425,3 +444,56 @@ def customers_view(request):
         'page_obj': page,
         'search': search,
     })
+
+
+@staff_member_required(login_url='/auth/login/')
+def reports_view(request):
+    """Transaction report — order/revenue stats, transaction list, and top customers for a date range."""
+    orders, start_date, end_date = _reports_queryset(request)
+
+    stats = orders.aggregate(total_revenue=Sum('total'), total_orders=Count('id'))
+    total_orders = stats['total_orders'] or 0
+    total_revenue = stats['total_revenue'] or 0
+    avg_order_value = total_revenue / total_orders if total_orders else 0
+
+    top_customers = orders.values('user__id', 'user__username', 'user__first_name', 'user__last_name').annotate(
+        order_count=Count('id'),
+        total_spent=Sum('total'),
+    ).order_by('-total_spent')[:10]
+
+    paginator = Paginator(orders, 15)
+    page = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'dashboard/reports.html', {
+        'page_obj': page,
+        'start_date': start_date,
+        'end_date': end_date,
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'avg_order_value': avg_order_value,
+        'top_customers': top_customers,
+    })
+
+
+@staff_member_required(login_url='/auth/login/')
+def reports_export_csv(request):
+    """Export the currently filtered transaction report as CSV."""
+    orders, start_date, end_date = _reports_queryset(request)
+
+    response = HttpResponse(content_type='text/csv')
+    filename = f"laporan-transaksi_{start_date or 'awal'}_{end_date or 'akhir'}.csv"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    writer.writerow(['No. Pesanan', 'Pelanggan', 'Tanggal', 'Status', 'Metode Pengiriman', 'Total'])
+    for order in orders:
+        writer.writerow([
+            order.order_id,
+            order.recipient_name or order.user.username,
+            order.created_at.strftime('%Y-%m-%d %H:%M'),
+            order.get_status_display(),
+            order.get_shipping_method_display(),
+            int(order.total),
+        ])
+
+    return response

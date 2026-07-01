@@ -18,4 +18,6 @@ urlpatterns = [
     path('orders/<int:pk>/update-status/', views.order_update_status, name='order_update_status'),
     path('orders/<int:pk>/refund-completed/', views.refund_mark_completed, name='refund_mark_completed'),
     path('customers/', views.customers_view, name='customers'),
+    path('reports/', views.reports_view, name='reports'),
+    path('reports/export/', views.reports_export_csv, name='reports_export_csv'),
 ]
