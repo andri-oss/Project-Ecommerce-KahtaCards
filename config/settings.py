@@ -164,5 +164,5 @@ DEFAULT_FROM_EMAIL = os.getenv('MAIL_FROM', 'Kahta-Grafika <no-reply@afeme.web.i
 # Register: python manage.py crontab add
 # Remove:   python manage.py crontab remove
 CRONJOBS = [
-    ('0 * * * *', 'apps.orders.cron.cancel_unpaid_orders'),
+    ('* * * * *', 'apps.orders.cron.cancel_unpaid_orders'),
 ]
