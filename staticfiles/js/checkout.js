@@ -149,9 +149,11 @@
 
   if (countdownEl) {
     const totalSeconds = 60 * 60; // 1 hour
-    let remaining = totalSeconds;
+    const createdAt = new Date(countdownEl.dataset.createdAt).getTime();
+    const deadline = createdAt + totalSeconds * 1000;
 
     function updateTimer() {
+      const remaining = Math.max(0, Math.round((deadline - Date.now()) / 1000));
       const hours = Math.floor(remaining / 3600);
       const mins = Math.floor((remaining % 3600) / 60);
       const secs = remaining % 60;
@@ -166,11 +168,10 @@
 
       if (remaining <= 0) {
         clearInterval(timerInterval);
-        countdownEl.textContent = '00:00';
+        countdownEl.textContent = '00:00:00';
         countdownEl.style.color = '#dc2626';
         if (timerBarEl) timerBarEl.style.background = '#dc2626';
       }
-      remaining--;
     }
 
     updateTimer();
