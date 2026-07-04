@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_crontab',
+
     # local apps
     'apps.accounts',
     'apps.catalog',
@@ -157,3 +159,10 @@ EMAIL_HOST_USER = os.getenv('SMTP_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('SMTP_PASS', '')
 EMAIL_USE_TLS = os.getenv('SMTP_SECURE', 'false').lower() == 'true'
 DEFAULT_FROM_EMAIL = os.getenv('MAIL_FROM', 'Kahta-Grafika <no-reply@afeme.web.id>')
+
+# Scheduled jobs (django-crontab)
+# Register: python manage.py crontab add
+# Remove:   python manage.py crontab remove
+CRONJOBS = [
+    ('0 * * * *', 'apps.orders.cron.cancel_unpaid_orders'),
+]
