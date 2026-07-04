@@ -148,14 +148,17 @@
   const timerBarEl  = document.getElementById('timer-bar');
 
   if (countdownEl) {
-    const totalSeconds = 24 * 60; // 24 minutes
+    const totalSeconds = 60 * 60; // 1 hour
     let remaining = totalSeconds;
 
     function updateTimer() {
-      const mins = Math.floor(remaining / 60);
+      const hours = Math.floor(remaining / 3600);
+      const mins = Math.floor((remaining % 3600) / 60);
       const secs = remaining % 60;
       countdownEl.textContent =
-        String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        String(hours).padStart(2, '0') + ':' +
+        String(mins).padStart(2, '0') + ':' +
+        String(secs).padStart(2, '0');
 
       if (timerBarEl) {
         timerBarEl.style.width = (remaining / totalSeconds) * 100 + '%';
