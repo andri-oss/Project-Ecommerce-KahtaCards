@@ -42,7 +42,7 @@ def register_view(request):
             email.send()
             
             messages.success(request, 'Pendaftaran berhasil. Silakan cek email Anda untuk mengaktifkan akun.')
-            return redirect('accounts:login')
+            return redirect('accounts:registration_success')
     else:
         form = RegisterForm()
 
@@ -50,6 +50,11 @@ def register_view(request):
         'form': form,
         'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
     })
+
+
+def registration_success_view(request):
+    """View to show a success message and prompt to activate email after registration."""
+    return render(request, 'accounts/registration_success.html')
 
 
 def login_view(request):
