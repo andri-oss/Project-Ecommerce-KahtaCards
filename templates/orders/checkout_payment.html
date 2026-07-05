@@ -189,7 +189,9 @@
                 window.location.href = orderSuccessUrl;
             },
             onPending: function(result) {
-                window.location.href = orderSuccessUrl;
+                // Payment is pending (e.g. Bank Transfer / QRIS hasn't been paid yet).
+                // Redirect to order details so they can see instructions or status.
+                window.location.href = "{% url 'orders:order_detail' order.order_id %}";
             },
             onError: function(result) {
                 alert('Pembayaran gagal. Silakan coba lagi.');
