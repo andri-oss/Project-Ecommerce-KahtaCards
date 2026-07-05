@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pendaftaran Berhasil — Kahta Grafika{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card" style="text-align: center; padding: 40px 30px;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" style="margin: 0 auto 20px;">
+            <path d="M22 11.08V12a10 10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <h1 class="auth-title">Pendaftaran Berhasil!</h1>
+        <p class="auth-subtitle" style="margin-top: 15px; margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6;">
+            Terima kasih telah mendaftar di Kahta Grafika. Kami telah mengirimkan email aktivasi ke kotak masuk Anda.
+            <br><br>
+            Silakan periksa email Anda dan klik tautan aktivasi untuk mulai menggunakan akun Anda.
+        </p>
+        <a href="{% url 'accounts:login' %}" class="btn btn-primary" style="width: 100%; justify-content: center;">Kembali ke Halaman Login</a>
+    </div>
+</div>
+{% endblock %}
