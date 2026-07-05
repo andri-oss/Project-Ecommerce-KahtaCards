@@ -106,34 +106,6 @@
                   <div class="payment-option-desc">Verifikasi otomatis</div>
                 </div>
               </div>
-            </label>
-            <label class="payment-option">
-              <input type="radio" name="payment_method" value="mandiri_bill">
-              <div class="payment-option-inner">
-                <div class="payment-icon payment-icon-bank">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-                  </svg>
-                </div>
-                <div>
-                  <div class="payment-option-name">Mandiri Bill</div>
-                  <div class="payment-option-desc">Verifikasi otomatis</div>
-                </div>
-              </div>
-            </label>
-          </div>
-
-          <div class="payment-group-label">SCAN & PAY</div>
-          <label class="payment-option payment-option-wide selected">
-            <input type="radio" name="payment_method" value="qris" checked>
-            <div class="payment-option-inner">
-              <div class="payment-icon payment-icon-qris">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/>
-                  <rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="1"/>
-                </svg>
-              </div>
-              <div>
                 <div class="payment-option-name">QRIS</div>
                 <div class="payment-option-desc">GoPay, OVO, Dana, ShopeePay &amp; semua bank</div>
               </div>
@@ -266,7 +238,8 @@
                 alert('Pembayaran gagal. Silakan coba lagi.');
             },
             onClose: function() {
-                // User closed the popup, do nothing or redirect to history
+                // If user closes popup without paying, refresh the page cleanly without POST data
+                window.location.href = window.location.pathname;
             }
         });
     });
