@@ -22,11 +22,11 @@
     if (hamburger && drawer) {
       hamburger.addEventListener('click', function () {
         const isOpen = hamburger.classList.toggle('open');
-        drawer.classList.toggle('open', isOpen);
 
         if (isOpen) {
           drawer.style.display = 'flex';
-          requestAnimationFrame(() => drawer.classList.add('open'));
+          void drawer.offsetWidth; // Force reflow
+          drawer.classList.add('open');
           document.body.style.overflow = 'hidden';
         } else {
           drawer.classList.remove('open');
