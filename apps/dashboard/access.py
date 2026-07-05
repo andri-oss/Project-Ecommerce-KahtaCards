@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 # Single source of truth for which dashboard menus exist and their staff-facing labels.
 # Keys must match apps.accounts.models.User.MENU_CHOICES.
 MENUS = [
+    ('dashboard', 'Dashboard'),
     ('products', 'Produk'),
     ('categories', 'Kategori'),
     ('orders', 'Pesanan'),

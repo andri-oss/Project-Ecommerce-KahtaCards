@@ -12,6 +12,7 @@ class User(AbstractUser):
     # Keys must match apps/dashboard/access.MENUS — each toggles a staff user's
     # access to one dashboard menu. Admins bypass this check entirely.
     MENU_CHOICES = [
+        ('dashboard', 'Dashboard'),
         ('products', 'Produk'),
         ('categories', 'Kategori'),
         ('orders', 'Pesanan'),

@@ -31,7 +31,7 @@ def _reports_queryset(request):
     return orders, start_date, end_date
 
 
-@dashboard_access_required()
+@dashboard_access_required('dashboard')
 def dashboard_view(request):
     """Admin overview — stats cards, revenue chart, recent orders."""
     today = timezone.now().date()
