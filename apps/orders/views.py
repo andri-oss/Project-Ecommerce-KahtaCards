@@ -151,6 +151,10 @@ def checkout_payment(request, order_id):
                     "customer_details": {
                         "first_name": order.recipient_name,
                         "phone": order.phone,
+                    },
+                    "custom_expiry": {
+                        "expiry_duration": 60,
+                        "unit": "minute"
                     }
                 }
                 transaction = snap.create_transaction(param)

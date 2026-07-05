@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from .models import Order
 
-UNPAID_ORDER_TTL = timedelta(days=1)
+UNPAID_ORDER_TTL = timedelta(hours=1)
 
 
 def cancel_unpaid_orders():
