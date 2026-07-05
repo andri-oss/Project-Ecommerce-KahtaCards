@@ -166,3 +166,11 @@ DEFAULT_FROM_EMAIL = os.getenv('MAIL_FROM', 'Kahta-Grafika <no-reply@afeme.web.i
 CRONJOBS = [
     ('* * * * *', 'apps.orders.cron.cancel_unpaid_orders'),
 ]
+
+# Firebase (Google Sign-In)
+FIREBASE_CREDENTIALS_PATH = BASE_DIR / os.getenv('FIREBASE_CREDENTIALS_PATH', 'secrets/firebase-service-account.json')
+FIREBASE_WEB_CONFIG = {
+    'apiKey': os.getenv('FIREBASE_WEB_API_KEY', ''),
+    'authDomain': os.getenv('FIREBASE_AUTH_DOMAIN', ''),
+    'projectId': os.getenv('FIREBASE_PROJECT_ID', ''),
+}

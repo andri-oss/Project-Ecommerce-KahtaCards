@@ -1,3 +1,6 @@
+import json
+
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib import messages
@@ -7,6 +10,9 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 from django.contrib.auth.tokens import default_token_generator
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from firebase_admin import auth as firebase_auth
 from .forms import RegisterForm
 
 User = get_user_model()
@@ -79,7 +85,53 @@ def login_view(request):
     return render(request, 'accounts/login.html', {
         'error': error,
         'username_value': request.POST.get('username', ''),
+        'firebase_config': settings.FIREBASE_WEB_CONFIG,
     })
+
+
+@require_POST
+def google_login(request):
+    """AJAX: verify a Firebase Google Sign-In ID token and log the matching user in."""
+    try:
+        id_token = json.loads(request.body).get('id_token', '')
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Permintaan tidak valid.'}, status=400)
+
+    if not id_token:
+        return JsonResponse({'success': False, 'error': 'Token tidak ditemukan.'}, status=400)
+
+    try:
+        decoded = firebase_auth.verify_id_token(id_token)
+    except Exception:
+        return JsonResponse({'success': False, 'error': 'Token Google tidak valid.'}, status=400)
+
+    email = decoded.get('email')
+    if not email:
+        return JsonResponse({'success': False, 'error': 'Akun Google tidak memiliki email.'}, status=400)
+
+    user, created = User.objects.get_or_create(
+        email=email,
+        defaults={
+            'username': email,
+            'first_name': decoded.get('name', email.split('@')[0]),
+            'is_active': True,
+        },
+    )
+    if created:
+        user.set_unusable_password()
+        user.save()
+
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+    next_url = request.GET.get('next', '')
+    if next_url:
+        redirect_to = next_url
+    elif user.is_admin or user.is_staff_employee:
+        redirect_to = '/dashboard/'
+    else:
+        redirect_to = '/'
+
+    return JsonResponse({'success': True, 'redirect': redirect_to})
 
 
 def logout_view(request):
