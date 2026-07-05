@@ -102,9 +102,6 @@ def checkout_shipping(request):
 @login_required
 def checkout_payment(request, order_id):
     """Step 2: Payment method selection & order confirmation."""
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept') == 'application/json':
-        if request.method != 'POST':
-            return JsonResponse({'success': False, 'error': f"Debug: Backend received a {request.method} request instead of POST. URL: {request.get_full_path()}"})
 
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
@@ -160,15 +157,7 @@ def checkout_payment(request, order_id):
                 payment.snap_token = transaction['token']
                 payment.save()
 
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept') == 'application/json':
-                return JsonResponse({'success': True, 'token': payment.snap_token})
-            else:
-                return redirect('orders:order_success', order_id=order.order_id)
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-            # Fallback if not AJAX
+            # Render the same page but with the snap_token to trigger the popup
             return render(request, 'orders/checkout_payment.html', {
                 'order': order,
                 'order_items': order.items.all(),
@@ -177,6 +166,20 @@ def checkout_payment(request, order_id):
                 'total': total,
                 'step': 2,
                 'snap_token': payment.snap_token,
+                'midtrans_client_key': settings.MIDTRANS_CLIENT_KEY,
+            })
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            # If error, return page with error message
+            return render(request, 'orders/checkout_payment.html', {
+                'order': order,
+                'order_items': order.items.all(),
+                'shipping_fee': shipping_fee,
+                'tax': tax,
+                'total': total,
+                'step': 2,
+                'error': str(e),
                 'midtrans_client_key': settings.MIDTRANS_CLIENT_KEY,
             })
 
