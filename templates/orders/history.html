@@ -81,9 +81,13 @@
                             <div class="order-total">{{ order.total|rupiah }}</div>
                         </div>
                     </div>
-                    <div class="order-actions">
+                    <div class="order-actions" style="display: flex; align-items: center;">
                         <a href="{% url 'orders:order_detail' order.order_id %}" class="btn-detail">Lihat Detail</a>
                         {% if order.status == 'pending' %}
+                            <div class="countdown-timer" data-created-at="{{ order.created_at.isoformat }}" style="display:flex; align-items:center; gap:5px; color:#dc2626; font-weight:600; font-size:0.9rem; margin-left:15px; margin-right:5px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span class="time-text">01:00:00</span>
+                            </div>
                             <a href="{% url 'orders:checkout_payment' order.order_id %}" class="btn btn-primary" style="padding: 8px 16px;">Bayar</a>
                         {% endif %}
                     </div>
@@ -119,6 +123,42 @@
             }
         }
     }
+
+    // Countdown logic for all pending orders
+    document.addEventListener("DOMContentLoaded", function() {
+        const timers = document.querySelectorAll('.countdown-timer');
+        if (timers.length > 0) {
+            const totalSeconds = 60 * 60; // 1 hour
+
+            function updateTimers() {
+                timers.forEach(timer => {
+                    const createdAt = new Date(timer.dataset.createdAt).getTime();
+                    const deadline = createdAt + totalSeconds * 1000;
+                    const remaining = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+                    
+                    const hours = Math.floor(remaining / 3600);
+                    const mins = Math.floor((remaining % 3600) / 60);
+                    const secs = remaining % 60;
+                    
+                    const timeText = timer.querySelector('.time-text');
+                    if (timeText) {
+                        timeText.textContent = 
+                            String(hours).padStart(2, '0') + ':' +
+                            String(mins).padStart(2, '0') + ':' +
+                            String(secs).padStart(2, '0');
+                    }
+
+                    if (remaining <= 0) {
+                        if (timeText) timeText.textContent = '00:00:00';
+                        timer.style.opacity = '0.5';
+                    }
+                });
+            }
+
+            updateTimers();
+            setInterval(updateTimers, 1000);
+        }
+    });
 </script>
 {% endblock %}
 {% endblock %}
