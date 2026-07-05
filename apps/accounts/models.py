@@ -45,5 +45,17 @@ class User(AbstractUser):
             return menu_key in (self.menu_access or [])
         return False
 
+    @property
+    def default_dashboard_url(self):
+        if self.is_admin:
+            return '/dashboard/'
+        if self.is_staff_employee:
+            if 'dashboard' in (self.menu_access or []):
+                return '/dashboard/'
+            for menu_key in (self.menu_access or []):
+                if menu_key != 'dashboard':
+                    return f'/dashboard/{menu_key}/'
+        return '/'
+
     def __str__(self):
         return self.username

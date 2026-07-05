@@ -59,7 +59,7 @@ def login_view(request):
         if next_url:
             return redirect(next_url)
         elif request.user.is_admin or request.user.is_staff_employee:
-            return redirect('/dashboard/')
+            return redirect(request.user.default_dashboard_url)
         else:
             return redirect('/')
 
@@ -80,7 +80,7 @@ def login_view(request):
                 if next_url:
                     return redirect(next_url)
                 elif user.is_admin or user.is_staff_employee:
-                    return redirect('/dashboard/')
+                    return redirect(user.default_dashboard_url)
                 else:
                     return redirect('/')
             else:
@@ -133,7 +133,7 @@ def google_login(request):
     if next_url:
         redirect_to = next_url
     elif user.is_admin or user.is_staff_employee:
-        redirect_to = '/dashboard/'
+        redirect_to = user.default_dashboard_url
     else:
         redirect_to = '/'
 
