@@ -87,61 +87,18 @@
           <a href="{% url 'orders:checkout_shipping' %}" class="shipping-summary-edit">Ubah</a>
         </div>
 
-        <!-- ── Payment Methods ────────────────────────────── -->
-        <div class="payment-section">
-          <h3 class="payment-section-title">Pilih Metode Pembayaran</h3>
-
-          <div class="payment-group-label">TRANSFER BANK (VIRTUAL ACCOUNT)</div>
-          <div class="payment-grid">
-            <label class="payment-option">
-              <input type="radio" name="payment_method" value="bca_va">
-              <div class="payment-option-inner">
-                <div class="payment-icon payment-icon-bank">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-                  </svg>
-                </div>
-                <div>
-                  <div class="payment-option-name">BCA Virtual Account</div>
-                  <div class="payment-option-desc">Verifikasi otomatis</div>
-                </div>
-              </div>
-                <div class="payment-option-name">QRIS</div>
-                <div class="payment-option-desc">GoPay, OVO, Dana, ShopeePay &amp; semua bank</div>
-              </div>
-              <div class="payment-check">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </div>
-            </div>
-          </label>
-
-          <div class="payment-group-label">DOMPET DIGITAL</div>
-          <div class="payment-grid">
-            <label class="payment-option">
-              <input type="radio" name="payment_method" value="gopay">
-              <div class="payment-option-inner">
-                <div class="payment-icon payment-icon-wallet">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/>
-                  </svg>
-                </div>
-                <div class="payment-option-name">GoPay</div>
-              </div>
-            </label>
-            <label class="payment-option">
-              <input type="radio" name="payment_method" value="ovo">
-              <div class="payment-option-inner">
-                <div class="payment-icon payment-icon-wallet">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/>
-                  </svg>
-                </div>
-                <div class="payment-option-name">OVO</div>
-              </div>
-            </label>
+        <!-- ── Midtrans Payment Gateway ───────────────────────── -->
+        <div class="payment-methods" style="padding: 20px; background: var(--bg-tertiary, #f9f9f9); border-radius: 8px; border: 1px solid var(--border-color, #e0e0e0); margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <h2 class="payment-methods-title" style="margin: 0;">Pembayaran Aman via Midtrans</h2>
           </div>
+          <p style="color: var(--text-secondary, #666); font-size: 0.95rem; line-height: 1.5; margin: 0;">
+            Silakan klik tombol <strong>Bayar Sekarang</strong> di samping untuk melanjutkan. Anda akan dapat memilih metode pembayaran seperti Transfer Bank (BCA, Mandiri, BNI, dll), E-Wallet (GoPay, OVO, ShopeePay), dan metode lainnya pada layar selanjutnya.
+          </p>
         </div>
 
       </div>
