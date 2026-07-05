@@ -167,10 +167,6 @@ CRONJOBS = [
     ('* * * * *', 'apps.orders.cron.cancel_unpaid_orders'),
 ]
 
-# Firebase (Google Sign-In)
-FIREBASE_CREDENTIALS_PATH = BASE_DIR / os.getenv('FIREBASE_CREDENTIALS_PATH', 'secrets/firebase-service-account.json')
-FIREBASE_WEB_CONFIG = {
-    'apiKey': os.getenv('FIREBASE_WEB_API_KEY', ''),
-    'authDomain': os.getenv('FIREBASE_AUTH_DOMAIN', ''),
-    'projectId': os.getenv('FIREBASE_PROJECT_ID', ''),
-}
+# Google Sign-In (Google Identity Services)
+GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
+GOOGLE_OAUTH_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', '')

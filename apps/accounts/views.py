@@ -12,7 +12,8 @@ from django.core.mail import EmailMessage
 from django.contrib.auth.tokens import default_token_generator
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from firebase_admin import auth as firebase_auth
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
 from .forms import RegisterForm
 
 User = get_user_model()
@@ -85,23 +86,25 @@ def login_view(request):
     return render(request, 'accounts/login.html', {
         'error': error,
         'username_value': request.POST.get('username', ''),
-        'firebase_config': settings.FIREBASE_WEB_CONFIG,
+        'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
     })
 
 
 @require_POST
 def google_login(request):
-    """AJAX: verify a Firebase Google Sign-In ID token and log the matching user in."""
+    """AJAX: verify a Google Identity Services ID token and log the matching user in."""
     try:
-        id_token = json.loads(request.body).get('id_token', '')
+        credential = json.loads(request.body).get('credential', '')
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Permintaan tidak valid.'}, status=400)
 
-    if not id_token:
+    if not credential:
         return JsonResponse({'success': False, 'error': 'Token tidak ditemukan.'}, status=400)
 
     try:
-        decoded = firebase_auth.verify_id_token(id_token)
+        decoded = google_id_token.verify_oauth2_token(
+            credential, google_requests.Request(), settings.GOOGLE_OAUTH_CLIENT_ID,
+        )
     except Exception:
         return JsonResponse({'success': False, 'error': 'Token Google tidak valid.'}, status=400)
 

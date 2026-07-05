@@ -140,22 +140,8 @@
 
 {% block extra_js %}
 <script src="{% static 'js/login.js' %}"></script>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-  import {
-    getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult,
-  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "{{ firebase_config.apiKey }}",
-    authDomain: "{{ firebase_config.authDomain }}",
-    projectId: "{{ firebase_config.projectId }}",
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
   const googleBtn = document.getElementById('googleLoginBtn');
   const errorEl = document.getElementById('googleLoginError');
 
@@ -164,40 +150,44 @@
     errorEl.style.display = 'block';
   }
 
-  async function completeLogin(idToken) {
+  async function handleCredentialResponse(response) {
+    errorEl.style.display = 'none';
+
     const params = new URLSearchParams(window.location.search);
     const next = params.get('next') || '';
     const url = "{% url 'accounts:google_login' %}" + (next ? `?next=${encodeURIComponent(next)}` : '');
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-      },
-      body: JSON.stringify({ id_token: idToken }),
-    });
-    const data = await response.json();
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      const data = await res.json();
 
-    if (data.success) {
-      window.location.href = data.redirect;
-    } else {
-      showError(data.error || 'Gagal masuk dengan Google.');
+      if (data.success) {
+        window.location.href = data.redirect;
+      } else {
+        showError(data.error || 'Gagal masuk dengan Google.');
+      }
+    } catch (err) {
+      showError('Gagal masuk dengan Google.');
     }
   }
 
-  // Runs after Google redirects back to this page with the sign-in result.
-  getRedirectResult(auth)
-    .then(async (result) => {
-      if (!result) return;
-      const idToken = await result.user.getIdToken();
-      await completeLogin(idToken);
-    })
-    .catch(() => showError('Gagal masuk dengan Google.'));
+  window.onload = () => {
+    google.accounts.id.initialize({
+      client_id: "{{ google_client_id }}",
+      callback: handleCredentialResponse,
+    });
 
-  googleBtn.addEventListener('click', () => {
-    errorEl.style.display = 'none';
-    signInWithRedirect(auth, provider);
-  });
+    googleBtn.addEventListener('click', () => {
+      errorEl.style.display = 'none';
+      google.accounts.id.prompt();
+    });
+  };
 </script>
 {% endblock %}
