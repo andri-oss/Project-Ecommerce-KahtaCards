@@ -38,7 +38,7 @@
       <p class="checkout-subtitle">Pilih metode pembayaran yang paling sesuai untuk pesanan Anda.</p>
     </div>
 
-    <form method="post" class="checkout-layout">
+    <form method="post" class="checkout-layout" action="{% url 'orders:checkout_payment' order.order_id %}">
       {% csrf_token %}
 
       <div class="checkout-form reveal">

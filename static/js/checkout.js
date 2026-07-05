@@ -192,10 +192,7 @@
       const formData = new FormData(this);
 
       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
-      let postUrl = window.location.href.split('?')[0]; // remove query params
-      if (!postUrl.endsWith('/')) {
-        postUrl += '/';
-      }
+      const postUrl = this.action || window.location.href;
 
       fetch(postUrl, {
         method: 'POST',
