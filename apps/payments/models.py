@@ -24,6 +24,7 @@ class Payment(models.Model):
         default=Status.PENDING
     )
     amount = models.DecimalField(max_digits=12, decimal_places=0)
+    snap_token = models.CharField(max_length=255, blank=True, null=True)
     paid_at = models.DateTimeField(blank=True, null=True)
     expires_at = models.DateTimeField(blank=True, null=True)
 

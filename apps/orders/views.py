@@ -120,23 +120,58 @@ def checkout_payment(request, order_id):
         order.shipping_fee = shipping_fee
         order.tax          = tax
         order.total        = total
-        # NOTE: simplified — no real Midtrans gateway yet; mark as PAID directly
-        order.status       = Order.Status.PAID
         order.save()
 
         from apps.payments.models import Payment
-        from django.utils import timezone
-        Payment.objects.get_or_create(
+        from django.conf import settings
+        import midtransclient
+
+        payment, created = Payment.objects.get_or_create(
             order=order,
             defaults={
                 'method': payment_method,
-                'status': Payment.Status.COMPLETED,
+                'status': Payment.Status.PENDING,
                 'amount': total,
-                'paid_at': timezone.now(),
             }
         )
 
-        return redirect('orders:order_success', order_id=order.order_id)
+        if not payment.snap_token:
+            snap = midtransclient.Snap(
+                is_production=settings.MIDTRANS_IS_PRODUCTION,
+                server_key=settings.MIDTRANS_SERVER_KEY,
+                client_key=settings.MIDTRANS_CLIENT_KEY
+            )
+            param = {
+                "transaction_details": {
+                    "order_id": order.order_id,
+                    "gross_amount": int(total)
+                },
+                "customer_details": {
+                    "first_name": order.recipient_name,
+                    "phone": order.phone,
+                }
+            }
+            try:
+                transaction = snap.create_transaction(param)
+                payment.snap_token = transaction['token']
+                payment.save()
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept') == 'application/json':
+            return JsonResponse({'success': True, 'token': payment.snap_token})
+        else:
+            # Fallback if not AJAX
+            return render(request, 'orders/checkout_payment.html', {
+                'order': order,
+                'order_items': order.items.all(),
+                'shipping_fee': shipping_fee,
+                'tax': tax,
+                'total': total,
+                'step': 2,
+                'snap_token': payment.snap_token,
+                'midtrans_client_key': settings.MIDTRANS_CLIENT_KEY,
+            })
 
     order_items = order.items.all()
 

@@ -178,4 +178,59 @@
     const timerInterval = setInterval(updateTimer, 1000);
   }
 
+  /* ── Form Submission (Midtrans Snap) ───────────────────── */
+  const checkoutForm = document.querySelector('form.checkout-layout');
+  if (checkoutForm) {
+    checkoutForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Memproses...';
+      submitBtn.disabled = true;
+
+      const formData = new FormData(this);
+
+      fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.token) {
+          window.snap.pay(data.token, {
+            onSuccess: function(result) {
+              window.location.href = typeof orderSuccessUrl !== 'undefined' ? orderSuccessUrl : '/orders/history/';
+            },
+            onPending: function(result) {
+              window.location.href = typeof orderSuccessUrl !== 'undefined' ? orderSuccessUrl : '/orders/history/';
+            },
+            onError: function(result) {
+              alert('Pembayaran gagal. Silakan coba lagi.');
+              submitBtn.textContent = originalText;
+              submitBtn.disabled = false;
+            },
+            onClose: function() {
+              submitBtn.textContent = originalText;
+              submitBtn.disabled = false;
+            }
+          });
+        } else {
+          alert('Terjadi kesalahan: ' + (data.error || 'Gagal memproses pembayaran.'));
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Terjadi kesalahan pada sistem.');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    });
+  }
+
 })();

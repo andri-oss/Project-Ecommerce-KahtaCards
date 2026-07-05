@@ -245,5 +245,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ midtrans_client_key }}"></script>
+<script>
+    const orderSuccessUrl = "{% url 'orders:order_success' order.order_id %}";
+</script>
 <script src="{% static 'js/checkout.js' %}"></script>
 {% endblock %}

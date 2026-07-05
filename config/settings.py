@@ -26,6 +26,10 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG") == "True"
 
+MIDTRANS_SERVER_KEY = os.getenv("MIDTRANS_SERVER_KEY", "")
+MIDTRANS_CLIENT_KEY = os.getenv("MIDTRANS_CLIENT_KEY", "")
+MIDTRANS_IS_PRODUCTION = os.getenv("MIDTRANS_IS_PRODUCTION", "False") == "True"
+
 ALLOWED_HOSTS = ["*"]  # nanti production diganti domain
 
 
