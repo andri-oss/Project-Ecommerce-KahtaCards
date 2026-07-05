@@ -4,23 +4,46 @@
 {% block title %}Pendaftaran Berhasil — Kahta Grafika{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <div class="auth-card" style="text-align: center; padding: 40px 30px;">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" style="margin: 0 auto 20px;">
-            <path d="M22 11.08V12a10 10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-        <h1 class="auth-title">Pendaftaran Berhasil!</h1>
-        <p class="auth-subtitle" style="margin-top: 15px; margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6;">
-            Terima kasih telah mendaftar di Kahta Grafika. Kami telah mengirimkan email aktivasi ke kotak masuk Anda.
-            <br><br>
-            Silakan periksa email Anda dan klik tautan aktivasi untuk mulai menggunakan akun Anda.
-        </p>
-        <a href="{% url 'accounts:login' %}" class="btn btn-primary" style="width: 100%; justify-content: center;">Kembali ke Halaman Login</a>
+<div class="login-page">
+
+  <!-- Background grain overlay -->
+  <div class="grain"></div>
+
+  <!-- Page header -->
+  <header class="brand-header">
+    <h1 class="brand-name">Kahta Grafika</h1>
+    <p class="brand-tagline">Premium Packaging Atelier</p>
+  </header>
+
+  <!-- Login card -->
+  <main class="login-card" role="main" style="text-align: center; padding: 40px 30px;">
+    
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary, #6d4c41)" stroke-width="2" style="margin: 0 auto 20px;">
+        <path d="M22 11.08V12a10 10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+    
+    <div class="card-top">
+      <h2 class="card-title">Pendaftaran Berhasil!</h2>
     </div>
+
+    <p style="margin-top: 15px; margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6; color: var(--color-text-light, #555);">
+        Terima kasih telah mendaftar di Kahta Grafika. Kami telah mengirimkan email aktivasi ke kotak masuk Anda.
+        <br><br>
+        Silakan periksa email Anda dan klik tautan aktivasi untuk mulai menggunakan akun Anda.
+    </p>
+
+    <a href="{% url 'accounts:login' %}" class="btn-masuk" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+      <span class="btn-text">Kembali ke Halaman Login</span>
+    </a>
+
+  </main>
 </div>
 {% endblock %}
