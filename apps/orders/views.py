@@ -163,9 +163,7 @@ def checkout_payment(request, order_id):
         except Exception as e:
             import traceback
             traceback.print_exc()
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept') == 'application/json':
-                return JsonResponse({'success': False, 'error': str(e)}, status=500)
-            raise e
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
             # Fallback if not AJAX
             return render(request, 'orders/checkout_payment.html', {
                 'order': order,

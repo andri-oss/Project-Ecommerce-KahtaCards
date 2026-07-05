@@ -191,14 +191,31 @@
 
       const formData = new FormData(this);
 
-      fetch(window.location.href, {
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+      let postUrl = window.location.href.split('?')[0]; // remove query params
+      if (!postUrl.endsWith('/')) {
+        postUrl += '/';
+      }
+
+      fetch(postUrl, {
         method: 'POST',
         body: formData,
         headers: {
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+          'X-CSRFToken': csrfToken
         }
       })
-      .then(response => response.json())
+      .then(response => {
+        return response.text().then(text => {
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("Server returned non-JSON response:", text);
+            throw new Error("Server returned HTML instead of JSON. Check the console for the full HTML response.");
+          }
+        });
+      })
       .then(data => {
         if (data.success && data.token) {
           window.snap.pay(data.token, {
