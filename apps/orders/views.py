@@ -102,6 +102,10 @@ def checkout_shipping(request):
 @login_required
 def checkout_payment(request, order_id):
     """Step 2: Payment method selection & order confirmation."""
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept') == 'application/json':
+        if request.method != 'POST':
+            return JsonResponse({'success': False, 'error': f"Debug: Backend received a {request.method} request instead of POST. URL: {request.get_full_path()}"})
+
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
     # Guard: don't re-process a paid/cancelled order
