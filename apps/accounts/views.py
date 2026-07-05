@@ -46,7 +46,10 @@ def register_view(request):
     else:
         form = RegisterForm()
 
-    return render(request, 'accounts/register.html', {'form': form})
+    return render(request, 'accounts/register.html', {
+        'form': form,
+        'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
+    })
 
 
 def login_view(request):
