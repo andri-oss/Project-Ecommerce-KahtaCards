@@ -209,6 +209,18 @@ def order_success(request, order_id):
 
 
 @login_required
+def payment_finish_redirect(request):
+    """
+    Handle redirect from Midtrans Dashboard.
+    Midtrans passes ?order_id=... in the URL query string.
+    """
+    order_id = request.GET.get('order_id')
+    if order_id:
+        return redirect('orders:order_success', order_id=order_id)
+    return redirect('orders:order_history')
+
+
+@login_required
 def order_history(request):
     """View user's order history."""
     orders = Order.objects.filter(user=request.user)
