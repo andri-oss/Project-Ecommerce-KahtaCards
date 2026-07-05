@@ -115,52 +115,57 @@ def checkout_payment(request, order_id):
     total        = int(order.subtotal) + shipping_fee + tax
 
     if request.method == 'POST':
-        payment_method = request.POST.get('payment_method', 'qris')
+        try:
+            payment_method = request.POST.get('payment_method', 'qris')
 
-        order.shipping_fee = shipping_fee
-        order.tax          = tax
-        order.total        = total
-        order.save()
+            order.shipping_fee = shipping_fee
+            order.tax          = tax
+            order.total        = total
+            order.save()
 
-        from apps.payments.models import Payment
-        from django.conf import settings
-        import midtransclient
+            from apps.payments.models import Payment
+            from django.conf import settings
+            import midtransclient
 
-        payment, created = Payment.objects.get_or_create(
-            order=order,
-            defaults={
-                'method': payment_method,
-                'status': Payment.Status.PENDING,
-                'amount': total,
-            }
-        )
-
-        if not payment.snap_token:
-            snap = midtransclient.Snap(
-                is_production=settings.MIDTRANS_IS_PRODUCTION,
-                server_key=settings.MIDTRANS_SERVER_KEY,
-                client_key=settings.MIDTRANS_CLIENT_KEY
-            )
-            param = {
-                "transaction_details": {
-                    "order_id": order.order_id,
-                    "gross_amount": int(total)
-                },
-                "customer_details": {
-                    "first_name": order.recipient_name,
-                    "phone": order.phone,
+            payment, created = Payment.objects.get_or_create(
+                order=order,
+                defaults={
+                    'method': payment_method,
+                    'status': Payment.Status.PENDING,
+                    'amount': total,
                 }
-            }
-            try:
+            )
+
+            if not payment.snap_token:
+                snap = midtransclient.Snap(
+                    is_production=settings.MIDTRANS_IS_PRODUCTION,
+                    server_key=settings.MIDTRANS_SERVER_KEY,
+                    client_key=settings.MIDTRANS_CLIENT_KEY
+                )
+                param = {
+                    "transaction_details": {
+                        "order_id": order.order_id,
+                        "gross_amount": int(total)
+                    },
+                    "customer_details": {
+                        "first_name": order.recipient_name,
+                        "phone": order.phone,
+                    }
+                }
                 transaction = snap.create_transaction(param)
                 payment.snap_token = transaction['token']
                 payment.save()
-            except Exception as e:
-                return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept') == 'application/json':
-            return JsonResponse({'success': True, 'token': payment.snap_token})
-        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept') == 'application/json':
+                return JsonResponse({'success': True, 'token': payment.snap_token})
+            else:
+                return redirect('orders:order_success', order_id=order.order_id)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('accept') == 'application/json':
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            raise e
             # Fallback if not AJAX
             return render(request, 'orders/checkout_payment.html', {
                 'order': order,
