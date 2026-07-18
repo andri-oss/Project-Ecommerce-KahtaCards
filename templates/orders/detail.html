@@ -343,28 +343,49 @@
     }
 
     btn.addEventListener('click', function() {
-        if (!confirm('Konfirmasi bahwa pesanan ini sudah Anda terima?')) return;
-        btn.disabled = true;
-        btn.textContent = 'Memproses...';
+        Swal.fire({
+            title: 'Konfirmasi Penerimaan',
+            text: 'Konfirmasi bahwa pesanan ini sudah Anda terima?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--color-primary, #6d4c41)',
+            confirmButtonText: 'Ya, Sudah',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                btn.disabled = true;
+                btn.textContent = 'Memproses...';
 
-        fetch("{% url 'orders:order_confirm_delivery' order.order_id %}", {
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(data.error || 'Gagal menyelesaikan pesanan.');
-                btn.disabled = false;
-                btn.textContent = 'Pesanan Sudah Diterima';
+                fetch("{% url 'orders:order_confirm_delivery' order.order_id %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        Swal.fire({
+                            title: 'Gagal',
+                            text: data.error || 'Gagal menyelesaikan pesanan.',
+                            icon: 'error',
+                            confirmButtonColor: 'var(--color-primary, #6d4c41)'
+                        });
+                        btn.disabled = false;
+                        btn.textContent = 'Pesanan Sudah Diterima';
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Terjadi kesalahan. Silakan coba lagi.',
+                        icon: 'error',
+                        confirmButtonColor: 'var(--color-primary, #6d4c41)'
+                    });
+                    btn.disabled = false;
+                    btn.textContent = 'Pesanan Sudah Diterima';
+                });
             }
-        })
-        .catch(() => {
-            alert('Terjadi kesalahan. Silakan coba lagi.');
-            btn.disabled = false;
-            btn.textContent = 'Pesanan Sudah Diterima';
         });
     });
 })();

@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.payments',
     'apps.dashboard',
+    'apps.chat',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +81,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.cart.context_processors.cart_context',
+                'apps.chat.context_processors.chat_context',
             ],
             'builtins': [
                 'apps.catalog.templatetags.currency_tags',

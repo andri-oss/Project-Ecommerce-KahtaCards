@@ -559,7 +559,12 @@
       }
     })
     .catch(() => {
-      alert('Gagal menyimpan desain. Silakan coba lagi.');
+      Swal.fire({
+          title: 'Error',
+          text: 'Gagal menyimpan desain. Silakan coba lagi.',
+          icon: 'error',
+          confirmButtonColor: 'var(--color-primary, #6d4c41)'
+      });
     })
     .finally(() => {
       saveBtn.disabled = false;

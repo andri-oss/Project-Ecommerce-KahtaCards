@@ -298,7 +298,12 @@
         }
       })
       .catch(() => {
-        alert('Gagal menambahkan ke keranjang');
+        Swal.fire({
+            title: 'Error',
+            text: 'Gagal menambahkan ke keranjang',
+            icon: 'error',
+            confirmButtonColor: 'var(--color-primary, #6d4c41)'
+        });
         this.textContent = 'Tambah ke Keranjang';
       })
       .finally(() => {
@@ -321,13 +326,23 @@
         if (data.success) {
           window.location.href = "{% url 'orders:checkout_shipping' %}";
         } else {
-          alert(data.error || 'Gagal memproses pesanan.');
+          Swal.fire({
+              title: 'Gagal',
+              text: data.error || 'Gagal memproses pesanan.',
+              icon: 'error',
+              confirmButtonColor: 'var(--color-primary, #6d4c41)'
+          });
           this.textContent = originalText;
           this.disabled = false;
         }
       })
       .catch(() => {
-        alert('Gagal memproses pesanan');
+        Swal.fire({
+            title: 'Error',
+            text: 'Gagal memproses pesanan',
+            icon: 'error',
+            confirmButtonColor: 'var(--color-primary, #6d4c41)'
+        });
         this.textContent = originalText;
         this.disabled = false;
       });

@@ -582,7 +582,7 @@
         if (trackingModal) trackingModal.classList.remove('show');
         setTimeout(() => location.reload(), 600);
       } else {
-        alert("Gagal mengupdate status.");
+        Swal.fire('Gagal', 'Gagal mengupdate status.', 'error');
         actionButtons.forEach(b => b.disabled = false);
       }
     });
@@ -600,7 +600,20 @@
         return;
       }
 
-      if (selectedStatus === 'cancelled' && !confirm('Batalkan pesanan ini? Tindakan ini tidak dapat diubah kembali.')) {
+      if (selectedStatus === 'cancelled') {
+        Swal.fire({
+            title: 'Batalkan Pesanan?',
+            text: 'Tindakan ini tidak dapat diubah kembali.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d32f2f',
+            confirmButtonText: 'Ya, Batalkan',
+            cancelButtonText: 'Kembali'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                executeStatusUpdate({ status: selectedStatus }, this);
+            }
+        });
         return;
       }
 
@@ -612,7 +625,7 @@
     submitTrackingBtn.addEventListener('click', function() {
       const tracking = trackingInput.value.trim();
       if (tracking === "") {
-        alert("Nomor resi tidak boleh kosong untuk pesanan yang dikirim.");
+        Swal.fire('Perhatian', 'Nomor resi tidak boleh kosong untuk pesanan yang dikirim.', 'warning');
         return;
       }
       executeStatusUpdate({ status: 'shipped', tracking_number: tracking }, submitTrackingBtn);
@@ -632,27 +645,38 @@
       }
       refundProofError.style.display = 'none';
 
-      if (!confirm('Tandai refund ini sebagai selesai? Pastikan Anda sudah mentransfer dana ke rekening customer.')) return;
-      refundBtn.disabled = true;
-      refundBtn.textContent = 'Memproses...';
+      Swal.fire({
+          title: 'Tandai Selesai?',
+          text: 'Tandai refund ini sebagai selesai? Pastikan Anda sudah mentransfer dana ke rekening customer.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: 'var(--color-primary, #c08b3a)',
+          confirmButtonText: 'Ya, Selesai',
+          cancelButtonText: 'Batal'
+      }).then((result) => {
+          if (result.isConfirmed) {
+              refundBtn.disabled = true;
+              refundBtn.textContent = 'Memproses...';
 
-      const formData = new FormData();
-      formData.append('proof_image', proofFile);
+              const formData = new FormData();
+              formData.append('proof_image', proofFile);
 
-      fetch('/dashboard/orders/' + refundBtn.dataset.orderPk + '/refund-completed/', {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        body: formData,
-      })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) {
-          location.reload();
-        } else {
-          alert(data.error || 'Gagal menandai refund.');
-          refundBtn.disabled = false;
-          refundBtn.textContent = 'Tandai Refund Selesai';
-        }
+              fetch('/dashboard/orders/' + refundBtn.dataset.orderPk + '/refund-completed/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: formData,
+              })
+              .then(r => r.json())
+              .then(data => {
+                if (data.success) {
+                  location.reload();
+                } else {
+                  Swal.fire('Gagal', data.error || 'Gagal menandai refund.', 'error');
+                  refundBtn.disabled = false;
+                  refundBtn.textContent = 'Tandai Refund Selesai';
+                }
+              });
+          }
       });
     });
   }

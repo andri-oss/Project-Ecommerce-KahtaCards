@@ -18,6 +18,7 @@ class User(AbstractUser):
         ('orders', 'Pesanan'),
         ('customers', 'Pelanggan'),
         ('reports', 'Laporan'),
+        ('chat', 'Chat'),
     ]
 
     role = models.CharField(

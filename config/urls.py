@@ -28,6 +28,7 @@ urlpatterns = [
     path('orders/', include('apps.orders.urls')),
     path('payments/', include('apps.payments.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
+    path('chat/', include('apps.chat.urls')),
     # matiin dulu
     # path('', include('apps.catalog.urls')),
     # path('', include('apps.accounts.urls')),

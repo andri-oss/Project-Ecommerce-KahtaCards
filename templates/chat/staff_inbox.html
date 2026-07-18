@@ -1,0 +1,62 @@
+{% extends 'dashboard/base_admin.html' %}
+{% block title %}Chat Pelanggan{% endblock %}
+
+{% block content %}
+
+<div class="adm-page-header">
+  <div class="adm-page-title">Chat Pelanggan</div>
+  <p class="adm-page-desc">Balas pesan pelanggan yang masuk melalui fitur chat toko</p>
+</div>
+
+<div class="adm-table-wrap">
+  <div class="adm-table-toolbar">
+    <form method="get" style="display:flex;gap:8px;">
+      <input type="text" name="q" value="{{ search }}" placeholder="Cari pelanggan..." class="pf-input" style="max-width:260px;">
+      <button type="submit" class="adm-btn">Cari</button>
+    </form>
+  </div>
+
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Pelanggan</th>
+        <th>Terakhir Aktif</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for conv in page_obj %}
+      <tr>
+        <td>
+          <div class="adm-product-name">{{ conv.customer.get_full_name|default:conv.customer.username }}</div>
+          <div class="adm-product-sku">{{ conv.customer.email }}</div>
+        </td>
+        <td>{{ conv.updated_at|date:"d M Y, H:i" }}</td>
+        <td>
+          {% if conv.id in unread_ids %}
+          <span class="adm-badge" style="background:#ffe0b2;color:#a05a00;">Pesan Baru</span>
+          {% else %}
+          <span class="adm-badge adm-badge-active">Terbaca</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'dashboard:chat_detail' conv.pk %}" class="adm-link">Buka Chat</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" style="text-align:center;color:#8a7060;padding:24px;">Belum ada percakapan pelanggan.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if page_obj.has_other_pages %}
+  <div class="adm-pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ search }}" class="adm-btn">« Sebelumnya</a>{% endif %}
+    <span>Halaman {{ page_obj.number }} dari {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ search }}" class="adm-btn">Selanjutnya »</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

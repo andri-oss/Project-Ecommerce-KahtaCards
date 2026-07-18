@@ -179,7 +179,12 @@
     const orderSuccessUrl = "{% url 'orders:order_success' order.order_id %}";
     
     {% if error %}
-    alert("Terjadi kesalahan: {{ error|escapejs }}");
+    Swal.fire({
+        title: 'Kesalahan',
+        text: '{{ error|escapejs }}',
+        icon: 'error',
+        confirmButtonColor: 'var(--color-primary, #6d4c41)'
+    });
     {% endif %}
 
     {% if snap_token %}
@@ -194,7 +199,12 @@
                 window.location.href = "{% url 'orders:order_detail' order.order_id %}";
             },
             onError: function(result) {
-                alert('Pembayaran gagal. Silakan coba lagi.');
+                Swal.fire({
+                    title: 'Gagal',
+                    text: 'Pembayaran gagal. Silakan coba lagi.',
+                    icon: 'error',
+                    confirmButtonColor: 'var(--color-primary, #6d4c41)'
+                });
             },
             onClose: function() {
                 // If user closes popup without paying, refresh the page cleanly without POST data

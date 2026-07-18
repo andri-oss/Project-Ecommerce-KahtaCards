@@ -230,7 +230,7 @@
     .then(r => r.json())
     .then(data => {
       if (data.success) { closeCatModal(); location.reload(); }
-      else { alert(data.error || 'Gagal menghapus kategori'); }
+      else { Swal.fire('Gagal', data.error || 'Gagal menghapus kategori', 'error'); }
     });
   });
 })();

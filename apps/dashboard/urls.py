@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from apps.chat import views as chat_views
 
 app_name = 'dashboard'
 
@@ -24,4 +25,8 @@ urlpatterns = [
     path('employees/add/', views.employee_add_view, name='employee_add'),
     path('employees/<int:pk>/edit/', views.employee_edit_view, name='employee_edit'),
     path('employees/<int:pk>/delete/', views.employee_delete_view, name='employee_delete'),
+    path('chat/', chat_views.staff_chat_inbox, name='chat_inbox'),
+    path('chat/<int:pk>/', chat_views.staff_chat_detail, name='chat_detail'),
+    path('chat/<int:pk>/send/', chat_views.staff_chat_send, name='chat_send'),
+    path('chat/<int:pk>/poll/', chat_views.staff_chat_poll, name='chat_poll'),
 ]

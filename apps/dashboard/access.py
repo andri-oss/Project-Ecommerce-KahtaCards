@@ -12,6 +12,7 @@ MENUS = [
     ('orders', 'Pesanan'),
     ('customers', 'Pelanggan'),
     ('reports', 'Laporan'),
+    ('chat', 'Chat'),
 ]
 
 
