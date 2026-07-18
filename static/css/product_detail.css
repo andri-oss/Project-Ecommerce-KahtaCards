@@ -275,6 +275,28 @@
   color: var(--color-accent);
 }
 
+.pd-btn-ask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  color: var(--color-accent);
+  border: none;
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--transition);
+}
+.pd-btn-ask:hover {
+  background: var(--bg-cream);
+}
+
 /* ── Tabs Section ────────────────────────────────────────────────── */
 .pd-tabs-section {
   max-width: 1100px;

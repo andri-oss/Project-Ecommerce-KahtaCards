@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block title %}Chat dengan Kami — Kahta Grafika{% endblock %}
 
@@ -17,7 +18,18 @@
             {% for message in messages %}
             <div class="chat-bubble-row {% if message.sender_id == request.user.id %}is-mine{% endif %}" data-id="{{ message.id }}">
                 <div class="chat-bubble">
-                    <div class="chat-bubble-body">{{ message.body }}</div>
+                    {% if message.product %}
+                    <a href="{% url 'catalog:product_detail' message.product.slug %}" class="chat-product-card">
+                        <div class="chat-product-img">
+                            {% if message.product.image %}<img src="{{ message.product.image.url }}" alt="{{ message.product.name }}">{% endif %}
+                        </div>
+                        <div class="chat-product-info">
+                            <div class="chat-product-name">{{ message.product.name }}</div>
+                            <div class="chat-product-price">{{ message.product.price|rupiah }}</div>
+                        </div>
+                    </a>
+                    {% endif %}
+                    {% if message.body %}<div class="chat-bubble-body">{{ message.body }}</div>{% endif %}
                     <div class="chat-bubble-time">{{ message.created_at|date:"H:i" }}</div>
                 </div>
             </div>
@@ -26,9 +38,22 @@
             {% endfor %}
         </div>
 
+        {% if mentioned_product %}
+        <div class="chat-attach-preview" id="chatAttachPreview" data-product-id="{{ mentioned_product.pk }}">
+            <div class="chat-product-img">
+                {% if mentioned_product.image %}<img src="{{ mentioned_product.image.url }}" alt="{{ mentioned_product.name }}">{% endif %}
+            </div>
+            <div class="chat-product-info">
+                <div class="chat-product-name">{{ mentioned_product.name }}</div>
+                <div class="chat-product-price">{{ mentioned_product.price|rupiah }}</div>
+            </div>
+            <button type="button" class="chat-attach-remove" id="chatAttachRemove" aria-label="Batalkan lampiran produk">&times;</button>
+        </div>
+        {% endif %}
+
         <form id="chatForm" class="chat-input-row">
             {% csrf_token %}
-            <input type="text" id="chatInput" class="chat-input" placeholder="Tulis pesan..." autocomplete="off" required>
+            <input type="text" id="chatInput" class="chat-input" placeholder="Tulis pesan..." autocomplete="off">
             <button type="submit" class="chat-send-btn">Kirim</button>
         </form>
     </div>
@@ -55,6 +80,18 @@
 .chat-input:focus { border-color: #c08b3a; }
 .chat-send-btn { padding: 10px 20px; border: none; border-radius: 10px; background: #c08b3a; color: #fff; font-weight: 600; cursor: pointer; }
 .chat-send-btn:hover { background: #a9772f; }
+
+.chat-product-card { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 8px; padding: 6px; margin-bottom: 6px; text-decoration: none; color: inherit; }
+.chat-bubble-row.is-mine .chat-product-card { background: rgba(255,255,255,.15); }
+.chat-product-img { width: 44px; height: 44px; border-radius: 6px; overflow: hidden; background: #eee; flex-shrink: 0; }
+.chat-product-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.chat-product-info { min-width: 0; }
+.chat-product-name { font-size: 12.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+.chat-product-price { font-size: 12px; opacity: .8; }
+
+.chat-attach-preview { display: flex; align-items: center; gap: 10px; background: #f3ede3; border-radius: 10px; padding: 8px 10px; margin: 12px 16px 0; position: relative; }
+.chat-attach-remove { margin-left: auto; background: none; border: none; font-size: 18px; line-height: 1; cursor: pointer; color: #8a7060; padding: 4px 6px; }
+.chat-attach-remove:hover { color: #c62828; }
 </style>
 {% endblock %}
 
@@ -65,6 +102,15 @@
     const form = document.getElementById('chatForm');
     const input = document.getElementById('chatInput');
     const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+    const attachPreview = document.getElementById('chatAttachPreview');
+    const attachRemove = document.getElementById('chatAttachRemove');
+
+    let attachedProductId = attachPreview ? attachPreview.dataset.productId : null;
+
+    attachRemove?.addEventListener('click', function () {
+        attachedProductId = null;
+        attachPreview.remove();
+    });
 
     let lastId = 0;
     messagesEl.querySelectorAll('.chat-bubble-row').forEach(row => {
@@ -76,6 +122,18 @@
     }
     scrollToBottom();
 
+    function renderProductCard(product) {
+        if (!product) return '';
+        const img = product.image_url ? `<img src="${product.image_url}" alt="">` : '';
+        return `<a href="${product.url}" class="chat-product-card">
+            <div class="chat-product-img">${img}</div>
+            <div class="chat-product-info">
+                <div class="chat-product-name"></div>
+                <div class="chat-product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</div>
+            </div>
+        </a>`;
+    }
+
     function appendMessage(msg) {
         const emptyEl = messagesEl.querySelector('.chat-empty');
         if (emptyEl) emptyEl.remove();
@@ -83,8 +141,16 @@
         const row = document.createElement('div');
         row.className = 'chat-bubble-row' + (msg.is_mine ? ' is-mine' : '');
         row.dataset.id = msg.id;
-        row.innerHTML = `<div class="chat-bubble"><div class="chat-bubble-body"></div><div class="chat-bubble-time">${msg.created_at}</div></div>`;
-        row.querySelector('.chat-bubble-body').textContent = msg.body;
+
+        const bodyHtml = msg.body ? '<div class="chat-bubble-body"></div>' : '';
+        row.innerHTML = `<div class="chat-bubble">${renderProductCard(msg.product)}${bodyHtml}<div class="chat-bubble-time">${msg.created_at}</div></div>`;
+
+        if (msg.product) {
+            row.querySelector('.chat-product-name').textContent = msg.product.name;
+        }
+        if (msg.body) {
+            row.querySelector('.chat-bubble-body').textContent = msg.body;
+        }
         messagesEl.appendChild(row);
         lastId = Math.max(lastId, msg.id);
     }
@@ -92,18 +158,26 @@
     form.addEventListener('submit', function (e) {
         e.preventDefault();
         const body = input.value.trim();
-        if (!body) return;
+        if (!body && !attachedProductId) return;
+
+        const params = new URLSearchParams();
+        params.append('body', body);
+        if (attachedProductId) params.append('product_id', attachedProductId);
 
         fetch("{% url 'chat:customer_send' %}", {
             method: 'POST',
             headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'body=' + encodeURIComponent(body),
+            body: params.toString(),
         })
         .then(r => r.json())
         .then(data => {
             if (data.error) return;
             appendMessage(data);
             input.value = '';
+            if (attachedProductId) {
+                attachedProductId = null;
+                attachPreview?.remove();
+            }
             scrollToBottom();
         });
     });

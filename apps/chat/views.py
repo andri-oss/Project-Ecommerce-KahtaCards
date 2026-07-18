@@ -3,23 +3,52 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.catalog.models import Product
 from apps.dashboard.access import dashboard_access_required
 from .models import Conversation, Message
+
+
+def _serialize_message(message, request_user):
+    data = {
+        'id': message.id,
+        'body': message.body,
+        'sender': message.sender.username,
+        'is_mine': message.sender_id == request_user.id,
+        'created_at': message.created_at.strftime('%H:%M'),
+        'product': None,
+    }
+    if message.product_id:
+        data['product'] = {
+            'id': message.product.id,
+            'name': message.product.name,
+            'slug': message.product.slug,
+            'price': message.product.price,
+            'image_url': message.product.image.url if message.product.image else '',
+            'url': reverse('catalog:product_detail', args=[message.product.slug]),
+        }
+    return data
 
 
 @login_required
 def customer_chat_view(request):
     """Buyer-facing chat page — one conversation per customer with the store."""
     conversation, _ = Conversation.objects.get_or_create(customer=request.user)
-    messages = conversation.messages.select_related('sender')
+    messages = conversation.messages.select_related('sender', 'product')
     messages.filter(~Q(sender=request.user), read_at__isnull=True).update(read_at=timezone.now())
+
+    mentioned_product = None
+    product_id = request.GET.get('product')
+    if product_id:
+        mentioned_product = Product.objects.filter(pk=product_id, is_active=True).first()
 
     return render(request, 'chat/customer_chat.html', {
         'conversation': conversation,
         'messages': messages,
+        'mentioned_product': mentioned_product,
     })
 
 
@@ -29,19 +58,16 @@ def customer_chat_send(request):
         return HttpResponseBadRequest()
 
     body = request.POST.get('body', '').strip()
-    if not body:
+    product_id = request.POST.get('product_id')
+    product = Product.objects.filter(pk=product_id).first() if product_id else None
+
+    if not body and not product:
         return JsonResponse({'error': 'Pesan tidak boleh kosong.'}, status=400)
 
     conversation, _ = Conversation.objects.get_or_create(customer=request.user)
-    message = Message.objects.create(conversation=conversation, sender=request.user, body=body)
+    message = Message.objects.create(conversation=conversation, sender=request.user, body=body, product=product)
 
-    return JsonResponse({
-        'id': message.id,
-        'body': message.body,
-        'sender': message.sender.username,
-        'is_mine': True,
-        'created_at': message.created_at.strftime('%H:%M'),
-    })
+    return JsonResponse(_serialize_message(message, request.user))
 
 
 @login_required
@@ -50,18 +76,10 @@ def customer_chat_poll(request):
     conversation, _ = Conversation.objects.get_or_create(customer=request.user)
     after_id = request.GET.get('after', 0)
 
-    messages = conversation.messages.select_related('sender').filter(id__gt=after_id)
+    messages = conversation.messages.select_related('sender', 'product').filter(id__gt=after_id)
     messages.filter(~Q(sender=request.user), read_at__isnull=True).update(read_at=timezone.now())
 
-    return JsonResponse({
-        'messages': [{
-            'id': m.id,
-            'body': m.body,
-            'sender': m.sender.username,
-            'is_mine': m.sender_id == request.user.id,
-            'created_at': m.created_at.strftime('%H:%M'),
-        } for m in messages]
-    })
+    return JsonResponse({'messages': [_serialize_message(m, request.user) for m in messages]})
 
 
 @dashboard_access_required('chat')
@@ -97,7 +115,7 @@ def staff_chat_inbox(request):
 @dashboard_access_required('chat')
 def staff_chat_detail(request, pk):
     conversation = get_object_or_404(Conversation.objects.select_related('customer'), pk=pk)
-    messages = conversation.messages.select_related('sender')
+    messages = conversation.messages.select_related('sender', 'product')
     messages.filter(sender=conversation.customer, read_at__isnull=True).update(read_at=timezone.now())
 
     return render(request, 'chat/staff_detail.html', {
@@ -113,18 +131,15 @@ def staff_chat_send(request, pk):
 
     conversation = get_object_or_404(Conversation, pk=pk)
     body = request.POST.get('body', '').strip()
-    if not body:
+    product_id = request.POST.get('product_id')
+    product = Product.objects.filter(pk=product_id).first() if product_id else None
+
+    if not body and not product:
         return JsonResponse({'error': 'Pesan tidak boleh kosong.'}, status=400)
 
-    message = Message.objects.create(conversation=conversation, sender=request.user, body=body)
+    message = Message.objects.create(conversation=conversation, sender=request.user, body=body, product=product)
 
-    return JsonResponse({
-        'id': message.id,
-        'body': message.body,
-        'sender': message.sender.username,
-        'is_mine': True,
-        'created_at': message.created_at.strftime('%H:%M'),
-    })
+    return JsonResponse(_serialize_message(message, request.user))
 
 
 @dashboard_access_required('chat')
@@ -132,18 +147,10 @@ def staff_chat_poll(request, pk):
     conversation = get_object_or_404(Conversation, pk=pk)
     after_id = request.GET.get('after', 0)
 
-    messages = conversation.messages.select_related('sender').filter(id__gt=after_id)
+    messages = conversation.messages.select_related('sender', 'product').filter(id__gt=after_id)
     messages.filter(sender=conversation.customer, read_at__isnull=True).update(read_at=timezone.now())
 
-    return JsonResponse({
-        'messages': [{
-            'id': m.id,
-            'body': m.body,
-            'sender': m.sender.username,
-            'is_mine': m.sender_id == request.user.id,
-            'created_at': m.created_at.strftime('%H:%M'),
-        } for m in messages]
-    })
+    return JsonResponse({'messages': [_serialize_message(m, request.user) for m in messages]})
 
 
 @login_required

@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from apps.catalog.models import Product
+
 
 class Conversation(models.Model):
     """One support chat thread per customer with the store's staff/admin."""
@@ -19,7 +21,8 @@ class Conversation(models.Model):
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='chat_messages')
-    body = models.TextField()
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True, related_name='chat_mentions')
+    body = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(blank=True, null=True)
 
